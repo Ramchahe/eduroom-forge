@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, CheckCircle2, Circle, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ const QuizPreview = () => {
   const [attemptedQuestions, setAttemptedQuestions] = useState<Set<string>>(new Set());
   const [markedForReview, setMarkedForReview] = useState<Set<string>>(new Set());
   const [timeRemaining, setTimeRemaining] = useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'hindi'>('english');
 
   useEffect(() => {
     if (!quizId) return;
@@ -96,6 +98,7 @@ const QuizPreview = () => {
       markedForReview: Array.from(markedForReview),
       startedAt: new Date().toISOString(),
       submittedAt: new Date().toISOString(),
+      selectedLanguage,
     };
 
     storage.addAttempt(attempt);
@@ -131,10 +134,28 @@ const QuizPreview = () => {
           <CardContent className="space-y-6">
             <div>
               <h3 className="font-semibold mb-2">Instructions:</h3>
-              <pre className="whitespace-pre-wrap text-sm text-muted-foreground font-sans">
-                {quiz.instructions}
-              </pre>
+              <div
+                className="prose prose-sm max-w-none text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: quiz.instructions }}
+              />
             </div>
+            {quiz.supportedLanguages.length > 1 && (
+              <div className="space-y-2">
+                <Label>Select Language</Label>
+                <Select value={selectedLanguage} onValueChange={(value: 'english' | 'hindi') => setSelectedLanguage(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quiz.supportedLanguages.map((lang) => (
+                      <SelectItem key={lang} value={lang} className="capitalize">
+                        {lang}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-4 py-4 border-y">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">{quiz.questions.length}</div>
@@ -182,6 +203,7 @@ const QuizPreview = () => {
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
+  const currentQuestionContent = currentQuestion.content[selectedLanguage] || currentQuestion.content.english;
   const currentQuestionStatus = getQuestionStatus(currentQuestion.id);
 
   return (
@@ -225,7 +247,7 @@ const QuizPreview = () => {
               <CardContent className="space-y-6">
                 <div
                   className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: currentQuestion.questionText }}
+                  dangerouslySetInnerHTML={{ __html: currentQuestionContent.questionText }}
                 />
 
                 {currentQuestion.type === 'single-correct' && (
@@ -233,7 +255,7 @@ const QuizPreview = () => {
                     value={answers[currentQuestion.id] || ''}
                     onValueChange={(value) => handleAnswer(currentQuestion.id, value)}
                   >
-                    {currentQuestion.options?.map((option, index) => (
+                    {currentQuestionContent.options?.map((option, index) => (
                       <div key={index} className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-secondary/50">
                         <RadioGroupItem value={option} id={`${currentQuestion.id}-${index}`} />
                         <Label htmlFor={`${currentQuestion.id}-${index}`} className="flex-1 cursor-pointer">
@@ -246,7 +268,7 @@ const QuizPreview = () => {
 
                 {currentQuestion.type === 'multi-correct' && (
                   <div className="space-y-2">
-                    {currentQuestion.options?.map((option, index) => (
+                    {currentQuestionContent.options?.map((option, index) => (
                       <div key={index} className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-secondary/50">
                         <Checkbox
                           id={`${currentQuestion.id}-${index}`}

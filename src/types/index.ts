@@ -2,21 +2,40 @@ export type UserRole = 'admin' | 'teacher' | 'student';
 
 export type QuestionType = 'single-correct' | 'multi-correct' | 'numerical' | 'subjective';
 
+export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+
+export type Language = 'english' | 'hindi';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  profilePhoto?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  address?: string;
+  enrollmentNumber?: string; // for students
+  department?: string; // for teachers
+}
+
+export interface QuestionContent {
+  questionText: string;
+  options?: string[];
+  questionImage?: string;
 }
 
 export interface Question {
   id: string;
   type: QuestionType;
-  questionText: string;
-  questionImage?: string;
-  options?: string[];
+  content: Record<Language, QuestionContent>;
   correctAnswer?: string | string[] | number;
   marks: number;
+  penaltyMarks: number;
+  topic?: string;
+  subject?: string;
+  tags: string[];
+  difficultyLevel: DifficultyLevel;
 }
 
 export interface Quiz {
@@ -26,6 +45,7 @@ export interface Quiz {
   courseId: string;
   duration: number; // in minutes
   instructions: string;
+  supportedLanguages: Language[];
   questions: Question[];
   createdBy: string;
   createdAt: string;
@@ -36,6 +56,11 @@ export interface Course {
   title: string;
   description: string;
   thumbnail?: string;
+  planType: 'free' | 'paid';
+  price?: number;
+  discountedPrice?: number;
+  category?: string;
+  level?: string;
   createdBy: string;
   createdAt: string;
   quizzes: string[]; // quiz IDs
@@ -53,4 +78,11 @@ export interface QuizAttempt {
   startedAt: string;
   submittedAt?: string;
   score?: number;
+  selectedLanguage: Language;
+}
+
+export interface QuestionBankItem extends Question {
+  bankId: string;
+  createdBy: string;
+  createdAt: string;
 }
