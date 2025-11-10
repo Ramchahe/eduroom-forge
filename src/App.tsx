@@ -5,12 +5,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import CreateCourse from "./pages/CreateCourse";
 import CourseDetail from "./pages/CourseDetail";
 import CreateQuiz from "./pages/CreateQuiz";
+import EditQuiz from "./pages/EditQuiz";
 import QuizPreview from "./pages/QuizPreview";
 import StudentDashboard from "./pages/StudentDashboard";
+import StudentCourseView from "./pages/StudentCourseView";
+import QuestionBank from "./pages/QuestionBank";
+import Analytics from "./pages/Analytics";
+import MyResults from "./pages/MyResults";
+import ManageUsers from "./pages/ManageUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,12 +31,20 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/create-course" element={<CreateCourse />} />
+          <Route path="/courses" element={<Dashboard />} />
           <Route path="/course/:courseId" element={<CourseDetail />} />
           <Route path="/create-quiz/:courseId" element={<CreateQuiz />} />
+          <Route path="/edit-quiz/:quizId" element={<EditQuiz />} />
           <Route path="/quiz-preview/:quizId" element={<QuizPreview />} />
+          <Route path="/student-course-view/:courseId" element={<StudentCourseView />} />
+          <Route path="/question-bank" element={<QuestionBank />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/my-results" element={<MyResults />} />
+          <Route path="/manage-users" element={<ManageUsers />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

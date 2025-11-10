@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { storage } from "@/lib/storage";
 import { User, Course } from "@/types";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, LogOut, GraduationCap } from "lucide-react";
-import { toast } from "sonner";
+import { BookOpen } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -30,38 +30,21 @@ const StudentDashboard = () => {
     setEnrolledCourses(enrolled);
   }, [navigate]);
 
-  const handleLogout = () => {
-    storage.setCurrentUser(null);
-    toast.success("Logged out successfully");
-    navigate("/");
-  };
-
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Course Platform</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <div className="font-medium">{user.name}</div>
-              <div className="text-muted-foreground">Student</div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar user={user} />
+        <div className="flex-1 flex flex-col">
+          <header className="border-b bg-card shadow-sm sticky top-0 z-10">
+            <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-bold">My Courses</h1>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+          <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold tracking-tight">My Courses</h2>
           <p className="text-muted-foreground mt-1">
@@ -85,7 +68,7 @@ const StudentDashboard = () => {
               <Card 
                 key={course.id} 
                 className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/student-course/${course.id}`)}
+                onClick={() => navigate(`/student-course-view/${course.id}`)}
               >
                 <CardHeader>
                   <div className="rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 h-32 mb-4 flex items-center justify-center">
@@ -107,8 +90,10 @@ const StudentDashboard = () => {
             ))}
           </div>
         )}
-      </main>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
