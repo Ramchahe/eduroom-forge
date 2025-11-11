@@ -11,6 +11,10 @@ import CreateCourse from "./pages/CreateCourse";
 import CourseDetail from "./pages/CourseDetail";
 import CreateQuiz from "./pages/CreateQuiz";
 import EditQuiz from "./pages/EditQuiz";
+import QuizReport from "./pages/QuizReport";
+import StudentResults from "./pages/StudentResults";
+import Profile from "./pages/Profile";
+import Security from "./pages/Security";
 import QuizPreview from "./pages/QuizPreview";
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentCourseView from "./pages/StudentCourseView";
@@ -40,11 +44,15 @@ const App = () => (
           <Route path="/create-quiz/:courseId" element={<CreateQuiz />} />
           <Route path="/edit-quiz/:quizId" element={<EditQuiz />} />
           <Route path="/quiz-preview/:quizId" element={<QuizPreview />} />
+          <Route path="/quiz-report/:quizId" element={<QuizReport />} />
+          <Route path="/student-results/:quizId" element={<StudentResults />} />
           <Route path="/student-course-view/:courseId" element={<StudentCourseView />} />
           <Route path="/question-bank" element={<QuestionBank />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/my-results" element={<MyResults />} />
           <Route path="/manage-users" element={<ManageUsers />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

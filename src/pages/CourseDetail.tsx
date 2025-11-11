@@ -5,7 +5,7 @@ import { Course, Quiz, User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, PlusCircle, Eye, Edit, Trash2, FileText, UserPlus } from "lucide-react";
+import { ArrowLeft, PlusCircle, Eye, Edit, Trash2, FileText, UserPlus, BarChart } from "lucide-react";
 import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -206,6 +206,14 @@ const CourseDetail = () => {
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             Preview
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/quiz-report/${quiz.id}`)}
+                          >
+                            <BarChart className="h-4 w-4 mr-1" />
+                            Report
                           </Button>
                           <Button
                             variant="outline"

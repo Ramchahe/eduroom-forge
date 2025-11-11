@@ -34,6 +34,19 @@ export const storage = {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   },
 
+  updateUser: (id: string, updates: Partial<User>) => {
+    const users = storage.getAllUsers();
+    const index = users.findIndex(u => u.id === id);
+    if (index !== -1) {
+      users[index] = { ...users[index], ...updates };
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      const currentUser = storage.getCurrentUser();
+      if (currentUser && currentUser.id === id) {
+        storage.setCurrentUser(users[index]);
+      }
+    }
+  },
+
   // Course operations
   getCourses: (): Course[] => {
     const data = localStorage.getItem(STORAGE_KEYS.COURSES);

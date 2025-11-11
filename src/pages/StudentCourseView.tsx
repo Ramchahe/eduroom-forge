@@ -5,7 +5,7 @@ import { User, Course, Quiz } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, PlayCircle, Clock, FileText, CheckCircle2 } from "lucide-react";
+import { PlayCircle, Clock, FileText, ArrowLeft, Award, CheckCircle2 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 
@@ -58,6 +58,12 @@ const StudentCourseView = () => {
 
   const handleStartQuiz = (quizId: string) => {
     window.open(`/quiz-preview/${quizId}`, '_blank');
+  };
+
+  const getAttemptForQuiz = (quizId: string) => {
+    if (!user) return null;
+    const allAttempts = storage.getAttempts();
+    return allAttempts.find(a => a.quizId === quizId && a.studentId === user.id && a.submittedAt);
   };
 
   if (!user || !course) return null;
@@ -117,6 +123,7 @@ const StudentCourseView = () => {
                 {quizzes.map((quiz) => {
                   const isAttempted = attemptedQuizIds.has(quiz.id);
                   const totalMarks = quiz.questions.reduce((sum, q) => sum + q.marks, 0);
+                  const userAttempt = getAttemptForQuiz(quiz.id);
 
                   return (
                     <Card key={quiz.id} className="hover:shadow-md transition-shadow">
@@ -157,10 +164,18 @@ const StudentCourseView = () => {
                               </div>
                             )}
                           </div>
-                          <Button onClick={() => handleStartQuiz(quiz.id)}>
-                            <PlayCircle className="h-4 w-4 mr-2" />
-                            {isAttempted ? 'Retake' : 'Start'} Quiz
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button onClick={() => handleStartQuiz(quiz.id)}>
+                              <PlayCircle className="h-4 w-4 mr-2" />
+                              {isAttempted ? 'Retake' : 'Start'} Quiz
+                            </Button>
+                            {userAttempt && (
+                              <Button onClick={() => navigate(`/student-results/${quiz.id}`)} variant="outline">
+                                <Award className="mr-2 h-4 w-4" />
+                                View Results
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </CardHeader>
                     </Card>

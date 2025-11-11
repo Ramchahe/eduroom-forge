@@ -23,7 +23,9 @@ import {
   BarChart3,
   LogOut,
   Users,
-  FileText
+  FileText,
+  User as UserIcon,
+  Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import { NavLink } from "@/components/NavLink";
@@ -50,11 +52,15 @@ export function AppSidebar({ user }: AppSidebarProps) {
     { title: "Create Course", url: "/create-course", icon: PlusCircle },
     { title: "Question Bank", url: "/question-bank", icon: Database },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
+    { title: "Profile", url: "/profile", icon: UserIcon },
+    { title: "Security", url: "/security", icon: Shield },
   ];
 
   const studentItems = [
     { title: "My Courses", url: "/student-dashboard", icon: BookOpen },
     { title: "Results", url: "/my-results", icon: FileText },
+    { title: "Profile", url: "/profile", icon: UserIcon },
+    { title: "Security", url: "/security", icon: Shield },
   ];
 
   const items = user.role === 'student' ? studentItems : adminTeacherItems;
