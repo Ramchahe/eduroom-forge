@@ -88,6 +88,37 @@ const QuizPreview = () => {
     const user = storage.getCurrentUser();
     if (!user || !quiz) return;
 
+    // Calculate score
+    let totalScore = 0;
+    quiz.questions.forEach((question) => {
+      const userAnswer = answers[question.id];
+      const correctAnswer = question.correctAnswer;
+      
+      if (question.type === 'single-correct') {
+        if (userAnswer === correctAnswer) {
+          totalScore += question.marks;
+        } else if (userAnswer) {
+          totalScore -= question.penaltyMarks;
+        }
+      } else if (question.type === 'multi-correct') {
+        const correctAnswers = Array.isArray(correctAnswer) ? correctAnswer : [];
+        const userAnswers = Array.isArray(userAnswer) ? userAnswer : [];
+        
+        if (JSON.stringify(userAnswers.sort()) === JSON.stringify(correctAnswers.sort())) {
+          totalScore += question.marks;
+        } else if (userAnswers.length > 0) {
+          totalScore -= question.penaltyMarks;
+        }
+      } else if (question.type === 'numerical') {
+        if (parseFloat(userAnswer) === correctAnswer) {
+          totalScore += question.marks;
+        } else if (userAnswer) {
+          totalScore -= question.penaltyMarks;
+        }
+      }
+      // Subjective questions need manual grading, so we don't auto-score them
+    });
+
     const attempt: QuizAttempt = {
       id: Date.now().toString(),
       quizId: quiz.id,
@@ -98,12 +129,13 @@ const QuizPreview = () => {
       markedForReview: Array.from(markedForReview),
       startedAt: new Date().toISOString(),
       submittedAt: new Date().toISOString(),
+      score: Math.max(0, totalScore),
       selectedLanguage,
     };
 
     storage.addAttempt(attempt);
     setStage('submitted');
-    toast.success("Quiz submitted successfully!");
+    toast.success(`Quiz submitted! Your score: ${Math.max(0, totalScore)}/${quiz.questions.reduce((acc, q) => acc + q.marks, 0)}`);
   };
 
   const formatTime = (seconds: number) => {

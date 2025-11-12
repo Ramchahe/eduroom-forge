@@ -24,22 +24,38 @@ const Login = () => {
       return;
     }
 
-    const user = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role,
-    };
-
-    storage.setCurrentUser(user);
-    storage.addUser(user);
+    // Check if user exists
+    const existingUser = storage.getUserByEmail(email);
     
-    toast.success(`Welcome, ${name}!`);
-    
-    if (role === "admin" || role === "teacher") {
-      navigate("/dashboard");
+    if (existingUser) {
+      // User exists, just log them in
+      storage.setCurrentUser(existingUser);
+      toast.success(`Welcome back, ${existingUser.name}!`);
+      
+      if (existingUser.role === "admin" || existingUser.role === "teacher") {
+        navigate("/dashboard");
+      } else {
+        navigate("/student-dashboard");
+      }
     } else {
-      navigate("/student-dashboard");
+      // New user, create account
+      const user = {
+        id: Date.now().toString(),
+        name,
+        email,
+        role,
+      };
+
+      storage.setCurrentUser(user);
+      storage.addUser(user);
+      
+      toast.success(`Welcome, ${name}!`);
+      
+      if (role === "admin" || role === "teacher") {
+        navigate("/dashboard");
+      } else {
+        navigate("/student-dashboard");
+      }
     }
   };
 

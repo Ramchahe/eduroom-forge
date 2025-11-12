@@ -1,4 +1,5 @@
 import { User, Course, Quiz, QuizAttempt } from '@/types';
+import { toast } from 'sonner';
 
 const STORAGE_KEYS = {
   USER: 'current_user',
@@ -8,30 +9,55 @@ const STORAGE_KEYS = {
   ATTEMPTS: 'quiz_attempts',
 };
 
+// Safe localStorage wrapper with error handling
+const safeSetItem = (key: string, value: string): boolean => {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      toast.error('Storage limit reached. Please clear some data.');
+    } else {
+      toast.error('Failed to save data. Please try again.');
+    }
+    console.error('LocalStorage error:', error);
+    return false;
+  }
+};
+
+const safeGetItem = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    console.error('LocalStorage read error:', error);
+    return null;
+  }
+};
+
 export const storage = {
   // User operations
   getCurrentUser: (): User | null => {
-    const data = localStorage.getItem(STORAGE_KEYS.USER);
+    const data = safeGetItem(STORAGE_KEYS.USER);
     return data ? JSON.parse(data) : null;
   },
 
   setCurrentUser: (user: User | null) => {
     if (user) {
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      safeSetItem(STORAGE_KEYS.USER, JSON.stringify(user));
     } else {
       localStorage.removeItem(STORAGE_KEYS.USER);
     }
   },
 
   getAllUsers: (): User[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.USERS);
+    const data = safeGetItem(STORAGE_KEYS.USERS);
     return data ? JSON.parse(data) : [];
   },
 
   addUser: (user: User) => {
     const users = storage.getAllUsers();
     users.push(user);
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    safeSetItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   },
 
   updateUser: (id: string, updates: Partial<User>) => {
@@ -39,7 +65,7 @@ export const storage = {
     const index = users.findIndex(u => u.id === id);
     if (index !== -1) {
       users[index] = { ...users[index], ...updates };
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      safeSetItem(STORAGE_KEYS.USERS, JSON.stringify(users));
       const currentUser = storage.getCurrentUser();
       if (currentUser && currentUser.id === id) {
         storage.setCurrentUser(users[index]);
@@ -47,9 +73,18 @@ export const storage = {
     }
   },
 
+  deleteUser: (id: string) => {
+    const users = storage.getAllUsers().filter(u => u.id !== id);
+    safeSetItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  },
+
+  getUserByEmail: (email: string): User | undefined => {
+    return storage.getAllUsers().find(u => u.email === email);
+  },
+
   // Course operations
   getCourses: (): Course[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.COURSES);
+    const data = safeGetItem(STORAGE_KEYS.COURSES);
     return data ? JSON.parse(data) : [];
   },
 
@@ -60,7 +95,7 @@ export const storage = {
   addCourse: (course: Course) => {
     const courses = storage.getCourses();
     courses.push(course);
-    localStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(courses));
+    safeSetItem(STORAGE_KEYS.COURSES, JSON.stringify(courses));
   },
 
   updateCourse: (id: string, updates: Partial<Course>) => {
@@ -68,18 +103,18 @@ export const storage = {
     const index = courses.findIndex(c => c.id === id);
     if (index !== -1) {
       courses[index] = { ...courses[index], ...updates };
-      localStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(courses));
+      safeSetItem(STORAGE_KEYS.COURSES, JSON.stringify(courses));
     }
   },
 
   deleteCourse: (id: string) => {
     const courses = storage.getCourses().filter(c => c.id !== id);
-    localStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(courses));
+    safeSetItem(STORAGE_KEYS.COURSES, JSON.stringify(courses));
   },
 
   // Quiz operations
   getQuizzes: (): Quiz[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.QUIZZES);
+    const data = safeGetItem(STORAGE_KEYS.QUIZZES);
     return data ? JSON.parse(data) : [];
   },
 
@@ -90,7 +125,7 @@ export const storage = {
   addQuiz: (quiz: Quiz) => {
     const quizzes = storage.getQuizzes();
     quizzes.push(quiz);
-    localStorage.setItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
+    safeSetItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
   },
 
   updateQuiz: (id: string, updates: Partial<Quiz>) => {
@@ -98,18 +133,18 @@ export const storage = {
     const index = quizzes.findIndex(q => q.id === id);
     if (index !== -1) {
       quizzes[index] = { ...quizzes[index], ...updates };
-      localStorage.setItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
+      safeSetItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
     }
   },
 
   deleteQuiz: (id: string) => {
     const quizzes = storage.getQuizzes().filter(q => q.id !== id);
-    localStorage.setItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
+    safeSetItem(STORAGE_KEYS.QUIZZES, JSON.stringify(quizzes));
   },
 
   // Quiz attempt operations
   getAttempts: (): QuizAttempt[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.ATTEMPTS);
+    const data = safeGetItem(STORAGE_KEYS.ATTEMPTS);
     return data ? JSON.parse(data) : [];
   },
 
@@ -120,7 +155,7 @@ export const storage = {
   addAttempt: (attempt: QuizAttempt) => {
     const attempts = storage.getAttempts();
     attempts.push(attempt);
-    localStorage.setItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(attempts));
+    safeSetItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(attempts));
   },
 
   updateAttempt: (id: string, updates: Partial<QuizAttempt>) => {
@@ -128,7 +163,7 @@ export const storage = {
     const index = attempts.findIndex(a => a.id === id);
     if (index !== -1) {
       attempts[index] = { ...attempts[index], ...updates };
-      localStorage.setItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(attempts));
+      safeSetItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(attempts));
     }
   },
 };

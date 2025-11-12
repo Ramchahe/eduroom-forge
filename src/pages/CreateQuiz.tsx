@@ -73,7 +73,15 @@ const CreateQuiz = () => {
   };
 
   const toggleCorrectAnswer = (optionIndex: number) => {
-    const optionText = currentContent.english.options?.[optionIndex] || '';
+    const englishOptions = currentContent.english.options || [];
+    if (optionIndex >= englishOptions.length) return;
+    
+    const optionText = englishOptions[optionIndex];
+    if (!optionText.trim()) {
+      toast.error("Please fill the option before selecting it as correct");
+      return;
+    }
+    
     if (currentType === 'single-correct') {
       setCurrentCorrectAnswers([optionText]);
     } else {
@@ -92,7 +100,26 @@ const CreateQuiz = () => {
 
   const addQuestion = () => {
     if (!currentContent.english.questionText) {
-      toast.error("Please enter a question");
+      toast.error("Please enter a question in English");
+      return;
+    }
+
+    // Validate options for MCQ types
+    if ((currentType === 'single-correct' || currentType === 'multi-correct')) {
+      const hasEmptyOptions = currentContent.english.options?.some(opt => !opt.trim());
+      if (hasEmptyOptions) {
+        toast.error("Please fill all options");
+        return;
+      }
+      if (currentCorrectAnswers.length === 0) {
+        toast.error("Please select at least one correct answer");
+        return;
+      }
+    }
+
+    // Validate numerical answer
+    if (currentType === 'numerical' && !currentCorrectAnswers[0]) {
+      toast.error("Please enter the correct numerical answer");
       return;
     }
 
@@ -121,7 +148,7 @@ const CreateQuiz = () => {
     });
     setCurrentCorrectAnswers([]);
     setCurrentTags([]);
-    toast.success("Question added");
+    toast.success("Question added successfully");
   };
 
   const handleSubmit = () => {

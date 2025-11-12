@@ -10,10 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, PlusCircle, Trash2, Edit2 } from "lucide-react";
+import { ArrowLeft, Save, PlusCircle, Trash2, Edit2, X } from "lucide-react";
 import { toast } from "sonner";
 import RichTextEditor from "@/components/RichTextEditor";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 const EditQuiz = () => {
   const { quizId } = useParams<{ quizId: string }>();
@@ -25,6 +27,8 @@ const EditQuiz = () => {
   const [instructions, setInstructions] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     if (!quizId) return;
@@ -69,10 +73,96 @@ const EditQuiz = () => {
     toast.success("Question deleted");
   };
 
+  const startEditQuestion = (question: Question) => {
+    setEditingQuestion(question);
+    setShowEditDialog(true);
+  };
+
+  const saveEditedQuestion = () => {
+    if (!editingQuestion) return;
+    setQuestions(questions.map(q => q.id === editingQuestion.id ? editingQuestion : q));
+    setShowEditDialog(false);
+    setEditingQuestion(null);
+    toast.success("Question updated");
+  };
+
   if (!quiz) return null;
 
   return (
     <div className="min-h-screen bg-background">
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Question</DialogTitle>
+            <DialogDescription>Update question details below</DialogDescription>
+          </DialogHeader>
+          {editingQuestion && (
+            <div className="space-y-4">
+              <div>
+                <Label>Question Text (English)</Label>
+                <RichTextEditor 
+                  value={editingQuestion.content.english.questionText}
+                  onChange={(v) => setEditingQuestion({
+                    ...editingQuestion,
+                    content: {
+                      ...editingQuestion.content,
+                      english: { ...editingQuestion.content.english, questionText: v }
+                    }
+                  })}
+                />
+              </div>
+
+              {(editingQuestion.type === 'single-correct' || editingQuestion.type === 'multi-correct') && (
+                <div className="space-y-2">
+                  <Label>Options</Label>
+                  {editingQuestion.content.english.options?.map((opt, i) => (
+                    <Input 
+                      key={i}
+                      value={opt}
+                      onChange={(e) => {
+                        const newOptions = [...(editingQuestion.content.english.options || [])];
+                        newOptions[i] = e.target.value;
+                        setEditingQuestion({
+                          ...editingQuestion,
+                          content: {
+                            ...editingQuestion.content,
+                            english: { ...editingQuestion.content.english, options: newOptions }
+                          }
+                        });
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Marks</Label>
+                  <Input 
+                    type="number"
+                    value={editingQuestion.marks}
+                    onChange={(e) => setEditingQuestion({ ...editingQuestion, marks: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <Label>Penalty Marks</Label>
+                  <Input 
+                    type="number"
+                    value={editingQuestion.penaltyMarks}
+                    onChange={(e) => setEditingQuestion({ ...editingQuestion, penaltyMarks: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-4">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+                <Button onClick={saveEditedQuestion}>Save Changes</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <header className="border-b bg-card shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <Button variant="ghost" onClick={() => navigate(`/course/${quiz.courseId}`)}>
@@ -152,13 +242,22 @@ const EditQuiz = () => {
                           Marks: {question.marks} | Penalty: {question.penaltyMarks}
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteQuestion(question.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditQuestion(question)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteQuestion(question.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                 </Card>

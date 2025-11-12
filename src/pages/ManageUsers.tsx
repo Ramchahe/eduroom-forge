@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, UserCog, Users as UsersIcon } from "lucide-react";
+import { Search, UserCog, Users as UsersIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -65,6 +65,20 @@ const ManageUsers = () => {
       case 'teacher': return 'default';
       case 'student': return 'secondary';
     }
+  };
+
+  const handleDeleteUser = (userId: string, userName: string) => {
+    if (window.confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      storage.deleteUser(userId);
+      toast.success(`${userName} has been deleted`);
+      loadUsers();
+    }
+  };
+
+  const handleChangeRole = (userId: string, newRole: UserRole) => {
+    storage.updateUser(userId, { role: newRole });
+    toast.success("User role updated");
+    loadUsers();
   };
 
   if (!currentUser) return null;
@@ -145,10 +159,25 @@ const ManageUsers = () => {
                             {user.role}
                           </Badge>
                           {user.role !== 'admin' && (
-                            <Button variant="outline" size="sm">
-                              <UserCog className="h-4 w-4 mr-2" />
-                              Manage
-                            </Button>
+                            <>
+                              <Select value={user.role} onValueChange={(newRole: UserRole) => handleChangeRole(user.id, newRole)}>
+                                <SelectTrigger className="w-[120px] h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="student">Student</SelectItem>
+                                  <SelectItem value="teacher">Teacher</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id, user.name)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>
