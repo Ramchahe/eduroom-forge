@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   COURSES: 'courses',
   QUIZZES: 'quizzes',
   ATTEMPTS: 'quiz_attempts',
+  SALARIES: 'salaries',
 };
 
 // Safe localStorage wrapper with error handling
@@ -165,5 +166,35 @@ export const storage = {
       attempts[index] = { ...attempts[index], ...updates };
       safeSetItem(STORAGE_KEYS.ATTEMPTS, JSON.stringify(attempts));
     }
+  },
+
+  // Salary operations
+  getSalaries: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.SALARIES);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addSalary: (record: any) => {
+    const salaries = storage.getSalaries();
+    salaries.push(record);
+    safeSetItem(STORAGE_KEYS.SALARIES, JSON.stringify(salaries));
+  },
+
+  updateSalary: (id: string, updates: Partial<any>) => {
+    const salaries = storage.getSalaries();
+    const index = salaries.findIndex((s: any) => s.id === id);
+    if (index !== -1) {
+      salaries[index] = { ...salaries[index], ...updates };
+      safeSetItem(STORAGE_KEYS.SALARIES, JSON.stringify(salaries));
+    }
+  },
+
+  deleteSalary: (id: string) => {
+    const salaries = storage.getSalaries().filter((s: any) => s.id !== id);
+    safeSetItem(STORAGE_KEYS.SALARIES, JSON.stringify(salaries));
+  },
+
+  getSalariesByUser: (userId: string): any[] => {
+    return storage.getSalaries().filter((s: any) => s.userId === userId);
   },
 };

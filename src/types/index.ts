@@ -86,3 +86,17 @@ export interface QuestionBankItem extends Question {
   createdBy: string;
   createdAt: string;
 }
+
+export interface SalaryRecord {
+  id: string;
+  userId: string; // teacher/admin user id
+  month: string; // YYYY-MM format
+  basePay: number;
+  bonus?: number;
+  deductions?: number;
+  netPay: number; // computed: base + bonus - deductions
+  status: 'pending' | 'paid';
+  notes?: string;
+  createdAt: string;
+  paidAt?: string;
+}

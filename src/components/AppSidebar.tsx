@@ -67,6 +67,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   if (user.role === 'admin') {
     items.push({ title: "Manage Users", url: "/manage-users", icon: Users });
+    items.push({ title: "Salary Management", url: "/admin/salaries", icon: Users });
   }
 
   return (
