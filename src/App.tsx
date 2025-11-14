@@ -23,6 +23,7 @@ import Analytics from "./pages/Analytics";
 import MyResults from "./pages/MyResults";
 import ManageUsers from "./pages/ManageUsers";
 import NotFound from "./pages/NotFound";
+import SalaryManagement from "./pages/SalaryManagement";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/my-results" element={<MyResults />} />
           <Route path="/manage-users" element={<ManageUsers />} />
+          <Route path="/admin/salaries" element={<SalaryManagement />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
