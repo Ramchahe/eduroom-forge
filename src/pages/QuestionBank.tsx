@@ -58,7 +58,11 @@ const QuestionBank = () => {
     const allQuizzes = storage.getQuizzes();
     const allQuestions: Question[] = [];
     allQuizzes.forEach(quiz => {
-      allQuestions.push(...quiz.questions);
+      // Only include questions with valid content structure
+      const validQuestions = quiz.questions.filter(q => 
+        q.content && q.content.english && q.content.english.questionText
+      );
+      allQuestions.push(...validQuestions);
     });
     setQuestions(allQuestions);
     setFilteredQuestions(allQuestions);
@@ -69,7 +73,7 @@ const QuestionBank = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(q => 
-        q.content.english.questionText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.content?.english?.questionText?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         q.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         q.topic?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -377,7 +381,7 @@ const QuestionBank = () => {
                           </div>
                           <div 
                             className="prose prose-sm max-w-none" 
-                            dangerouslySetInnerHTML={{ __html: question.content.english.questionText }}
+                            dangerouslySetInnerHTML={{ __html: question.content?.english?.questionText || 'No question text' }}
                           />
                           <div className="mt-3 flex gap-4 text-sm text-muted-foreground">
                             <span>Marks: {question.marks}</span>
