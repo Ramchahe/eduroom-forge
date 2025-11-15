@@ -8,6 +8,13 @@ const STORAGE_KEYS = {
   QUIZZES: 'quizzes',
   ATTEMPTS: 'quiz_attempts',
   SALARIES: 'salaries',
+  ASSIGNMENTS: 'assignments',
+  SUBMISSIONS: 'submissions',
+  MATERIALS: 'course_materials',
+  CALENDAR: 'calendar_events',
+  ANNOUNCEMENTS: 'announcements',
+  FEE_STRUCTURES: 'fee_structures',
+  FEE_RECORDS: 'fee_records',
 };
 
 // Safe localStorage wrapper with error handling
@@ -196,5 +203,173 @@ export const storage = {
 
   getSalariesByUser: (userId: string): any[] => {
     return storage.getSalaries().filter((s: any) => s.userId === userId);
+  },
+
+  // Assignment operations
+  getAssignments: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.ASSIGNMENTS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addAssignment: (assignment: any) => {
+    const assignments = storage.getAssignments();
+    assignments.push(assignment);
+    safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
+  },
+
+  updateAssignment: (id: string, updates: Partial<any>) => {
+    const assignments = storage.getAssignments();
+    const index = assignments.findIndex((a: any) => a.id === id);
+    if (index !== -1) {
+      assignments[index] = { ...assignments[index], ...updates };
+      safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
+    }
+  },
+
+  deleteAssignment: (id: string) => {
+    const assignments = storage.getAssignments().filter((a: any) => a.id !== id);
+    safeSetItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
+  },
+
+  // Submission operations
+  getSubmissions: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.SUBMISSIONS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addSubmission: (submission: any) => {
+    const submissions = storage.getSubmissions();
+    submissions.push(submission);
+    safeSetItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+  },
+
+  updateSubmission: (id: string, updates: Partial<any>) => {
+    const submissions = storage.getSubmissions();
+    const index = submissions.findIndex((s: any) => s.id === id);
+    if (index !== -1) {
+      submissions[index] = { ...submissions[index], ...updates };
+      safeSetItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+    }
+  },
+
+  // Course materials operations
+  getMaterials: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.MATERIALS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addMaterial: (material: any) => {
+    const materials = storage.getMaterials();
+    materials.push(material);
+    safeSetItem(STORAGE_KEYS.MATERIALS, JSON.stringify(materials));
+  },
+
+  deleteMaterial: (id: string) => {
+    const materials = storage.getMaterials().filter((m: any) => m.id !== id);
+    safeSetItem(STORAGE_KEYS.MATERIALS, JSON.stringify(materials));
+  },
+
+  // Calendar operations
+  getCalendarEvents: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.CALENDAR);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addCalendarEvent: (event: any) => {
+    const events = storage.getCalendarEvents();
+    events.push(event);
+    safeSetItem(STORAGE_KEYS.CALENDAR, JSON.stringify(events));
+  },
+
+  updateCalendarEvent: (id: string, updates: Partial<any>) => {
+    const events = storage.getCalendarEvents();
+    const index = events.findIndex((e: any) => e.id === id);
+    if (index !== -1) {
+      events[index] = { ...events[index], ...updates };
+      safeSetItem(STORAGE_KEYS.CALENDAR, JSON.stringify(events));
+    }
+  },
+
+  deleteCalendarEvent: (id: string) => {
+    const events = storage.getCalendarEvents().filter((e: any) => e.id !== id);
+    safeSetItem(STORAGE_KEYS.CALENDAR, JSON.stringify(events));
+  },
+
+  // Announcement operations
+  getAnnouncements: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.ANNOUNCEMENTS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addAnnouncement: (announcement: any) => {
+    const announcements = storage.getAnnouncements();
+    announcements.push(announcement);
+    safeSetItem(STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(announcements));
+  },
+
+  updateAnnouncement: (id: string, updates: Partial<any>) => {
+    const announcements = storage.getAnnouncements();
+    const index = announcements.findIndex((a: any) => a.id === id);
+    if (index !== -1) {
+      announcements[index] = { ...announcements[index], ...updates };
+      safeSetItem(STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(announcements));
+    }
+  },
+
+  deleteAnnouncement: (id: string) => {
+    const announcements = storage.getAnnouncements().filter((a: any) => a.id !== id);
+    safeSetItem(STORAGE_KEYS.ANNOUNCEMENTS, JSON.stringify(announcements));
+  },
+
+  // Fee structure operations
+  getFeeStructures: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.FEE_STRUCTURES);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addFeeStructure: (structure: any) => {
+    const structures = storage.getFeeStructures();
+    structures.push(structure);
+    safeSetItem(STORAGE_KEYS.FEE_STRUCTURES, JSON.stringify(structures));
+  },
+
+  updateFeeStructure: (id: string, updates: Partial<any>) => {
+    const structures = storage.getFeeStructures();
+    const index = structures.findIndex((s: any) => s.id === id);
+    if (index !== -1) {
+      structures[index] = { ...structures[index], ...updates };
+      safeSetItem(STORAGE_KEYS.FEE_STRUCTURES, JSON.stringify(structures));
+    }
+  },
+
+  deleteFeeStructure: (id: string) => {
+    const structures = storage.getFeeStructures().filter((s: any) => s.id !== id);
+    safeSetItem(STORAGE_KEYS.FEE_STRUCTURES, JSON.stringify(structures));
+  },
+
+  // Fee record operations
+  getFeeRecords: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.FEE_RECORDS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  addFeeRecord: (record: any) => {
+    const records = storage.getFeeRecords();
+    records.push(record);
+    safeSetItem(STORAGE_KEYS.FEE_RECORDS, JSON.stringify(records));
+  },
+
+  updateFeeRecord: (id: string, updates: Partial<any>) => {
+    const records = storage.getFeeRecords();
+    const index = records.findIndex((r: any) => r.id === id);
+    if (index !== -1) {
+      records[index] = { ...records[index], ...updates };
+      safeSetItem(STORAGE_KEYS.FEE_RECORDS, JSON.stringify(records));
+    }
+  },
+
+  deleteFeeRecord: (id: string) => {
+    const records = storage.getFeeRecords().filter((r: any) => r.id !== id);
+    safeSetItem(STORAGE_KEYS.FEE_RECORDS, JSON.stringify(records));
   },
 };

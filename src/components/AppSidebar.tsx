@@ -25,7 +25,11 @@ import {
   Users,
   FileText,
   User as UserIcon,
-  Shield
+  Shield,
+  ClipboardList,
+  Calendar as CalendarIcon,
+  Megaphone,
+  DollarSign
 } from "lucide-react";
 import { toast } from "sonner";
 import { NavLink } from "@/components/NavLink";
@@ -50,7 +54,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Courses", url: "/courses", icon: BookOpen },
     { title: "Create Course", url: "/create-course", icon: PlusCircle },
+    { title: "Assignments", url: "/assignments", icon: ClipboardList },
     { title: "Question Bank", url: "/question-bank", icon: Database },
+    { title: "Calendar", url: "/calendar", icon: CalendarIcon },
+    { title: "Announcements", url: "/announcements", icon: Megaphone },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
     { title: "Profile", url: "/profile", icon: UserIcon },
     { title: "Security", url: "/security", icon: Shield },
@@ -58,6 +65,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const studentItems = [
     { title: "My Courses", url: "/student-dashboard", icon: BookOpen },
+    { title: "My Assignments", url: "/student-assignments", icon: ClipboardList },
+    { title: "Calendar", url: "/calendar", icon: CalendarIcon },
+    { title: "Announcements", url: "/announcements", icon: Megaphone },
     { title: "Results", url: "/my-results", icon: FileText },
     { title: "Profile", url: "/profile", icon: UserIcon },
     { title: "Security", url: "/security", icon: Shield },
@@ -68,6 +78,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   if (user.role === 'admin') {
     items.push({ title: "Manage Users", url: "/manage-users", icon: Users });
     items.push({ title: "Salary Management", url: "/admin/salaries", icon: Users });
+    items.push({ title: "Fee Management", url: "/fee-management", icon: DollarSign });
   }
 
   return (
