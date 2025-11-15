@@ -24,6 +24,11 @@ import MyResults from "./pages/MyResults";
 import ManageUsers from "./pages/ManageUsers";
 import NotFound from "./pages/NotFound";
 import SalaryManagement from "./pages/SalaryManagement";
+import Assignments from "./pages/Assignments";
+import StudentAssignments from "./pages/StudentAssignments";
+import Calendar from "./pages/Calendar";
+import Announcements from "./pages/Announcements";
+import FeeManagement from "./pages/FeeManagement";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +58,11 @@ const App = () => (
           <Route path="/my-results" element={<MyResults />} />
           <Route path="/manage-users" element={<ManageUsers />} />
           <Route path="/admin/salaries" element={<SalaryManagement />} />
+          <Route path="/assignments" element={<Assignments />} />
+          <Route path="/student-assignments" element={<StudentAssignments />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/announcements" element={<Announcements />} />
+          <Route path="/fee-management" element={<FeeManagement />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
