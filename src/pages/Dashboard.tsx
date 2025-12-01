@@ -24,6 +24,14 @@ const Dashboard = () => {
       navigate("/student-dashboard");
       return;
     }
+    if (currentUser.role === "admin") {
+      navigate("/admin-dashboard");
+      return;
+    }
+    if (currentUser.role === "teacher") {
+      navigate("/teacher-dashboard");
+      return;
+    }
     setUser(currentUser);
     loadCourses(currentUser);
   }, [navigate]);

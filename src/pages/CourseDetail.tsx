@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { storage } from "@/lib/storage";
-import { Course, Quiz, User } from "@/types";
+import { Course, Quiz, User, CourseMaterial } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, PlusCircle, Eye, Edit, Trash2, FileText, UserPlus, BarChart } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, PlusCircle, Eye, Edit, Trash2, FileText, UserPlus, BarChart, Upload, Link as LinkIcon, Download } from "lucide-react";
 import { toast } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -28,10 +32,19 @@ const CourseDetail = () => {
   const [user, setUser] = useState<User | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [materials, setMaterials] = useState<CourseMaterial[]>([]);
   const [deleteQuizId, setDeleteQuizId] = useState<string | null>(null);
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
+  const [showMaterialDialog, setShowMaterialDialog] = useState(false);
   const [students, setStudents] = useState<User[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  
+  // Material upload state
+  const [materialTitle, setMaterialTitle] = useState('');
+  const [materialDescription, setMaterialDescription] = useState('');
+  const [materialType, setMaterialType] = useState<'pdf' | 'document' | 'video' | 'link'>('pdf');
+  const [materialUrl, setMaterialUrl] = useState('');
+  const [materialFile, setMaterialFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -60,6 +73,11 @@ const CourseDetail = () => {
     const allStudents = allUsers.filter(u => u.role === 'student');
     setStudents(allStudents);
     setSelectedStudents(foundCourse.enrolledStudents);
+
+    // Load materials
+    const allMaterials = storage.getMaterials();
+    const courseMaterials = allMaterials.filter((m: any) => m.courseId === courseId);
+    setMaterials(courseMaterials);
   }, [courseId, navigate]);
 
   const handleDeleteQuiz = (quizId: string) => {
@@ -93,6 +111,76 @@ const CourseDetail = () => {
     setCourse({ ...course, enrolledStudents: selectedStudents });
     setShowEnrollDialog(false);
     toast.success("Enrollment updated successfully");
+  };
+
+  const handleUploadMaterial = async () => {
+    if (!course || !user || !materialTitle) {
+      toast.error('Please fill required fields');
+      return;
+    }
+
+    let fileData = null;
+    if (materialFile) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newMaterial: CourseMaterial = {
+          id: Date.now().toString(),
+          courseId: course.id,
+          title: materialTitle,
+          description: materialDescription,
+          type: materialType,
+          file: materialType !== 'link' ? {
+            id: Date.now().toString(),
+            name: materialFile!.name,
+            type: materialFile!.type,
+            data: e.target!.result as string,
+            size: materialFile!.size,
+          } : undefined,
+          url: materialType === 'link' ? materialUrl : undefined,
+          uploadedBy: user.id,
+          uploadedAt: new Date().toISOString(),
+        };
+        
+        storage.addMaterial(newMaterial);
+        setMaterials([...materials, newMaterial]);
+        toast.success('Material uploaded successfully');
+        setShowMaterialDialog(false);
+        resetMaterialForm();
+      };
+      reader.readAsDataURL(materialFile);
+    } else if (materialType === 'link' && materialUrl) {
+      const newMaterial: CourseMaterial = {
+        id: Date.now().toString(),
+        courseId: course.id,
+        title: materialTitle,
+        description: materialDescription,
+        type: materialType,
+        url: materialUrl,
+        uploadedBy: user.id,
+        uploadedAt: new Date().toISOString(),
+      };
+      storage.addMaterial(newMaterial);
+      setMaterials([...materials, newMaterial]);
+      toast.success('Link added successfully');
+      setShowMaterialDialog(false);
+      resetMaterialForm();
+    } else {
+      toast.error('Please provide a file or link');
+    }
+  };
+
+  const resetMaterialForm = () => {
+    setMaterialTitle('');
+    setMaterialDescription('');
+    setMaterialType('pdf');
+    setMaterialUrl('');
+    setMaterialFile(null);
+  };
+
+  const handleDeleteMaterial = (materialId: string) => {
+    storage.deleteMaterial(materialId);
+    setMaterials(materials.filter(m => m.id !== materialId));
+    toast.success('Material deleted');
   };
 
   if (!course || !user) return null;
@@ -238,6 +326,109 @@ const CourseDetail = () => {
                 ))}
               </div>
             )}
+
+            {/* Course Materials Section */}
+            <div className="mt-12">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold">Course Materials</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upload PDFs, documents, videos or add links
+                  </p>
+                </div>
+                <Dialog open={showMaterialDialog} onOpenChange={setShowMaterialDialog}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Add Material
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Course Material</DialogTitle>
+                      <DialogDescription>Upload files or add links for students</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Title *</Label>
+                        <Input value={materialTitle} onChange={(e) => setMaterialTitle(e.target.value)} />
+                      </div>
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea value={materialDescription} onChange={(e) => setMaterialDescription(e.target.value)} />
+                      </div>
+                      <div>
+                        <Label>Type</Label>
+                        <Select value={materialType} onValueChange={(val: any) => setMaterialType(val)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pdf">PDF</SelectItem>
+                            <SelectItem value="document">Document</SelectItem>
+                            <SelectItem value="video">Video</SelectItem>
+                            <SelectItem value="link">Link</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {materialType === 'link' ? (
+                        <div>
+                          <Label>URL *</Label>
+                          <Input type="url" value={materialUrl} onChange={(e) => setMaterialUrl(e.target.value)} placeholder="https://..." />
+                        </div>
+                      ) : (
+                        <div>
+                          <Label>File *</Label>
+                          <Input type="file" onChange={(e) => setMaterialFile(e.target.files?.[0] || null)} />
+                        </div>
+                      )}
+                      <Button onClick={handleUploadMaterial} className="w-full">
+                        {materialType === 'link' ? 'Add Link' : 'Upload Material'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {materials.length === 0 ? (
+                <Card className="border-dashed">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No materials uploaded yet</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {materials.map((material) => (
+                    <Card key={material.id}>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            {material.type === 'link' ? <LinkIcon className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+                            {material.title}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteMaterial(material.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </CardTitle>
+                        {material.description && (
+                          <CardDescription>{material.description}</CardDescription>
+                        )}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-xs text-muted-foreground">
+                          Uploaded: {new Date(material.uploadedAt).toLocaleDateString()}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </main>
         </div>
       </div>

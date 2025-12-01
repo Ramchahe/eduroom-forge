@@ -50,8 +50,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
     navigate("/");
   };
 
-  const adminTeacherItems = [
-    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  const adminItems = [
+    { title: "Dashboard", url: "/admin-dashboard", icon: LayoutDashboard },
     { title: "Courses", url: "/courses", icon: BookOpen },
     { title: "Create Course", url: "/create-course", icon: PlusCircle },
     { title: "Assignments", url: "/assignments", icon: ClipboardList },
@@ -59,27 +59,40 @@ export function AppSidebar({ user }: AppSidebarProps) {
     { title: "Calendar", url: "/calendar", icon: CalendarIcon },
     { title: "Announcements", url: "/announcements", icon: Megaphone },
     { title: "Analytics", url: "/analytics", icon: BarChart3 },
+    { title: "Manage Users", url: "/manage-users", icon: Users },
+    { title: "Salary Management", url: "/admin/salaries", icon: DollarSign },
+    { title: "Fee Management", url: "/fee-management", icon: DollarSign },
+    { title: "Profile", url: "/profile", icon: UserIcon },
+    { title: "Security", url: "/security", icon: Shield },
+  ];
+
+  const teacherItems = [
+    { title: "Dashboard", url: "/teacher-dashboard", icon: LayoutDashboard },
+    { title: "Courses", url: "/courses", icon: BookOpen },
+    { title: "Create Course", url: "/create-course", icon: PlusCircle },
+    { title: "Assignments", url: "/assignments", icon: ClipboardList },
+    { title: "Question Bank", url: "/question-bank", icon: Database },
+    { title: "Calendar", url: "/calendar", icon: CalendarIcon },
+    { title: "Announcements", url: "/announcements", icon: Megaphone },
+    { title: "Analytics", url: "/analytics", icon: BarChart3 },
+    { title: "Fee Management", url: "/fee-management", icon: DollarSign },
     { title: "Profile", url: "/profile", icon: UserIcon },
     { title: "Security", url: "/security", icon: Shield },
   ];
 
   const studentItems = [
+    { title: "Dashboard", url: "/student-dashboard", icon: LayoutDashboard },
     { title: "My Courses", url: "/student-dashboard", icon: BookOpen },
     { title: "My Assignments", url: "/student-assignments", icon: ClipboardList },
     { title: "Calendar", url: "/calendar", icon: CalendarIcon },
     { title: "Announcements", url: "/announcements", icon: Megaphone },
     { title: "Results", url: "/my-results", icon: FileText },
+    { title: "Fee Payment", url: "/my-fees", icon: DollarSign },
     { title: "Profile", url: "/profile", icon: UserIcon },
     { title: "Security", url: "/security", icon: Shield },
   ];
 
-  const items = user.role === 'student' ? studentItems : adminTeacherItems;
-
-  if (user.role === 'admin') {
-    items.push({ title: "Manage Users", url: "/manage-users", icon: Users });
-    items.push({ title: "Salary Management", url: "/admin/salaries", icon: Users });
-    items.push({ title: "Fee Management", url: "/fee-management", icon: DollarSign });
-  }
+  const items = user.role === 'admin' ? adminItems : user.role === 'teacher' ? teacherItems : studentItems;
 
   return (
     <Sidebar className={isCollapsed ? "w-16" : "w-64"}>
@@ -95,7 +108,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      end={item.url === '/dashboard' || item.url === '/student-dashboard'}
+                      end={item.url === '/student-dashboard' || item.url === '/admin-dashboard' || item.url === '/teacher-dashboard'}
                       className="hover:bg-accent/50"
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >

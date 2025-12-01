@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { storage } from "@/lib/storage";
-import { User, Course, Quiz } from "@/types";
+import { User, Course, Quiz, CourseMaterial } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlayCircle, Clock, FileText, ArrowLeft, Award, CheckCircle2 } from "lucide-react";
+import { PlayCircle, Clock, FileText, ArrowLeft, Award, CheckCircle2, Download, Link, BookOpenCheck } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 
@@ -15,6 +15,7 @@ const StudentCourseView = () => {
   const [user, setUser] = useState<User | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [materials, setMaterials] = useState<CourseMaterial[]>([]);
   const [attemptedQuizIds, setAttemptedQuizIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -54,6 +55,11 @@ const StudentCourseView = () => {
     const userAttempts = allAttempts.filter(a => a.studentId === currentUser.id);
     const attempted = new Set(userAttempts.map(a => a.quizId));
     setAttemptedQuizIds(attempted);
+
+    // Get course materials
+    const allMaterials = storage.getMaterials();
+    const courseMaterials = allMaterials.filter((m: any) => m.courseId === courseId);
+    setMaterials(courseMaterials);
   }, [courseId, navigate]);
 
   const handleStartQuiz = (quizId: string) => {
@@ -181,6 +187,66 @@ const StudentCourseView = () => {
                     </Card>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Course Materials Section */}
+            {materials.length > 0 && (
+              <div className="mt-12">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                  <BookOpenCheck className="h-6 w-6" />
+                  Course Materials
+                </h2>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {materials.map((material) => (
+                    <Card key={material.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {material.type === 'pdf' && <FileText className="h-5 w-5 text-red-500" />}
+                          {material.type === 'document' && <FileText className="h-5 w-5 text-blue-500" />}
+                          {material.type === 'link' && <Link className="h-5 w-5 text-purple-500" />}
+                          {material.title}
+                        </CardTitle>
+                        {material.description && (
+                          <CardDescription>{material.description}</CardDescription>
+                        )}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex gap-2">
+                          {material.type === 'link' && material.url ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(material.url, '_blank')}
+                              className="w-full"
+                            >
+                              <Link className="mr-2 h-4 w-4" />
+                              Open Link
+                            </Button>
+                          ) : material.file ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = material.file!.data;
+                                link.download = material.file!.name;
+                                link.click();
+                              }}
+                              className="w-full"
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              Download
+                            </Button>
+                          ) : null}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-2">
+                          Added on {new Date(material.uploadedAt).toLocaleDateString()}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
           </main>
