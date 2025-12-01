@@ -17,6 +17,7 @@ export interface User {
   address?: string;
   enrollmentNumber?: string; // for students
   department?: string; // for teachers
+  classes?: string[]; // classes assigned (for teachers) or enrolled (for students)
 }
 
 export interface QuestionContent {
@@ -65,6 +66,7 @@ export interface Course {
   createdAt: string;
   quizzes: string[]; // quiz IDs
   enrolledStudents: string[]; // student IDs
+  classes?: string[]; // classes this course is assigned to
 }
 
 export interface QuizAttempt {

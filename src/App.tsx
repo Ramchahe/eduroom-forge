@@ -29,6 +29,9 @@ import StudentAssignments from "./pages/StudentAssignments";
 import Calendar from "./pages/Calendar";
 import Announcements from "./pages/Announcements";
 import FeeManagement from "./pages/FeeManagement";
+import StudentFees from "./pages/StudentFees";
+import AdminDashboard from "./pages/AdminDashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +66,9 @@ const App = () => (
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/announcements" element={<Announcements />} />
           <Route path="/fee-management" element={<FeeManagement />} />
+          <Route path="/my-fees" element={<StudentFees />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
