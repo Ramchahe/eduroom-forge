@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '@/lib/storage';
-import { Announcement, User } from '@/types';
+import { Announcement, User, SchoolClass } from '@/types';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Megaphone, Trash2, AlertCircle, FileText, Download, Eye } from 'lucide-react';
 
@@ -19,11 +20,13 @@ export default function Announcements() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [priority, setPriority] = useState<'normal' | 'urgent'>('normal');
   const [visibility, setVisibility] = useState<Announcement['visibility']>('all');
+  const [targetClasses, setTargetClasses] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<any[]>([]);
 
   useEffect(() => {
@@ -33,14 +36,20 @@ export default function Announcements() {
       return;
     }
     setUser(currentUser);
+    setClasses(storage.getClasses());
     loadAnnouncements(currentUser);
   }, [navigate]);
 
   const loadAnnouncements = (currentUser: User) => {
     const allAnnouncements = storage.getAnnouncements();
-    const filtered = allAnnouncements.filter((a: Announcement) => 
-      a.visibility === 'all' || a.visibility === currentUser.role
-    ).sort((a: Announcement, b: Announcement) => 
+    const filtered = allAnnouncements.filter((a: Announcement) => {
+      const visibilityMatch = a.visibility === 'all' || a.visibility === currentUser.role;
+      const classMatch = !a.targetClasses || a.targetClasses.length === 0 ||
+        (currentUser.classId && a.targetClasses.includes(currentUser.classId)) ||
+        (currentUser.classes && currentUser.classes.some(c => a.targetClasses?.includes(c))) ||
+        currentUser.role === 'admin';
+      return visibilityMatch && classMatch;
+    }).sort((a: Announcement, b: Announcement) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     setAnnouncements(filtered);
@@ -86,6 +95,7 @@ export default function Announcements() {
       createdAt: new Date().toISOString(),
       priority,
       visibility,
+      targetClasses: targetClasses.length > 0 ? targetClasses : undefined,
       attachments: attachments.length > 0 ? attachments : undefined,
       readBy: [],
     };
@@ -102,6 +112,7 @@ export default function Announcements() {
     setContent('');
     setPriority('normal');
     setVisibility('all');
+    setTargetClasses([]);
     setAttachments([]);
   };
 
@@ -194,6 +205,30 @@ export default function Announcements() {
                       </Select>
                     </div>
                   </div>
+                  {classes.length > 0 && (
+                    <div>
+                      <Label className="mb-2 block">Target Classes (optional)</Label>
+                      <p className="text-sm text-muted-foreground mb-2">Leave empty for all classes</p>
+                      <div className="flex flex-wrap gap-2">
+                        {classes.map((cls) => (
+                          <Badge
+                            key={cls.id}
+                            variant={targetClasses.includes(cls.id) ? "default" : "outline"}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setTargetClasses(prev =>
+                                prev.includes(cls.id)
+                                  ? prev.filter(c => c !== cls.id)
+                                  : [...prev, cls.id]
+                              );
+                            }}
+                          >
+                            {cls.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <Label>Attachments</Label>
                     <Input type="file" multiple onChange={handleFileUpload} />

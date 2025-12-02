@@ -1,4 +1,4 @@
-import { User, Course, Quiz, QuizAttempt } from '@/types';
+import { User, Course, Quiz, QuizAttempt, SchoolClass } from '@/types';
 import { toast } from 'sonner';
 
 const STORAGE_KEYS = {
@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   ANNOUNCEMENTS: 'announcements',
   FEE_STRUCTURES: 'fee_structures',
   FEE_RECORDS: 'fee_records',
+  CLASSES: 'school_classes',
 };
 
 // Safe localStorage wrapper with error handling
@@ -371,5 +372,43 @@ export const storage = {
   deleteFeeRecord: (id: string) => {
     const records = storage.getFeeRecords().filter((r: any) => r.id !== id);
     safeSetItem(STORAGE_KEYS.FEE_RECORDS, JSON.stringify(records));
+  },
+
+  // Class operations
+  getClasses: (): SchoolClass[] => {
+    const data = safeGetItem(STORAGE_KEYS.CLASSES);
+    return data ? JSON.parse(data) : [];
+  },
+
+  getClassById: (id: string): SchoolClass | undefined => {
+    return storage.getClasses().find(c => c.id === id);
+  },
+
+  addClass: (schoolClass: SchoolClass) => {
+    const classes = storage.getClasses();
+    classes.push(schoolClass);
+    safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(classes));
+  },
+
+  updateClass: (id: string, updates: Partial<SchoolClass>) => {
+    const classes = storage.getClasses();
+    const index = classes.findIndex(c => c.id === id);
+    if (index !== -1) {
+      classes[index] = { ...classes[index], ...updates };
+      safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(classes));
+    }
+  },
+
+  deleteClass: (id: string) => {
+    const classes = storage.getClasses().filter(c => c.id !== id);
+    safeSetItem(STORAGE_KEYS.CLASSES, JSON.stringify(classes));
+  },
+
+  getStudentsByClass: (classId: string): User[] => {
+    return storage.getAllUsers().filter(u => u.role === 'student' && u.classId === classId);
+  },
+
+  getTeachersByClass: (classId: string): User[] => {
+    return storage.getAllUsers().filter(u => u.role === 'teacher' && u.classes?.includes(classId));
   },
 };
