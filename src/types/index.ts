@@ -6,6 +6,14 @@ export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 
 export type Language = 'english' | 'hindi';
 
+export interface SchoolClass {
+  id: string;
+  name: string;
+  description?: string;
+  createdBy: string;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -17,7 +25,8 @@ export interface User {
   address?: string;
   enrollmentNumber?: string; // for students
   department?: string; // for teachers
-  classes?: string[]; // classes assigned (for teachers) or enrolled (for students)
+  classId?: string; // single class for students
+  classes?: string[]; // multiple classes for teachers
 }
 
 export interface QuestionContent {
@@ -108,6 +117,7 @@ export interface Assignment {
   title: string;
   description: string;
   courseId: string;
+  classId?: string; // target specific class
   createdBy: string;
   createdAt: string;
   dueDate: string;
@@ -159,6 +169,7 @@ export interface CalendarEvent {
   endDate?: string;
   category: string;
   color: string;
+  targetClasses?: string[]; // events can target specific classes
   createdBy: string;
   createdAt: string;
 }
@@ -171,7 +182,7 @@ export interface Announcement {
   createdAt: string;
   priority: 'normal' | 'urgent';
   visibility: 'all' | 'student' | 'teacher' | 'admin';
-  targetClass?: string;
+  targetClasses?: string[]; // multiple classes can be targeted
   attachments?: FileAttachment[];
   readBy: string[]; // user IDs who have read
 }
@@ -181,6 +192,7 @@ export interface FeeStructure {
   name: string;
   components: FeeComponent[];
   academicYear: string;
+  classId?: string; // optional class-specific fee structure
   createdBy: string;
   createdAt: string;
 }

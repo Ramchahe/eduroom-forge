@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { storage } from "@/lib/storage";
-import { User } from "@/types";
+import { User, SchoolClass } from "@/types";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, FileText, Users, Calendar, TrendingUp, DollarSign } from "lucide-react";
+import { BookOpen, FileText, Users, Calendar, TrendingUp, DollarSign, School, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [assignedClasses, setAssignedClasses] = useState<SchoolClass[]>([]);
   const [stats, setStats] = useState({
     myCourses: 0,
     myQuizzes: 0,
@@ -19,6 +21,7 @@ const TeacherDashboard = () => {
     pendingGrading: 0,
     upcomingEvents: 0,
     mySalary: 0,
+    myClassesCount: 0,
   });
 
   useEffect(() => {
@@ -42,8 +45,20 @@ const TeacherDashboard = () => {
     const submissions = storage.getSubmissions();
     const events = storage.getCalendarEvents();
     const salaries = storage.getSalariesByUser(currentUser.id);
+    const allClasses = storage.getClasses();
 
-    const totalStudents = courses.reduce((sum, c) => sum + c.enrolledStudents.length, 0);
+    // Get teacher's assigned classes
+    const teacherClasses = allClasses.filter(c => currentUser.classes?.includes(c.id));
+    setAssignedClasses(teacherClasses);
+
+    // Get students from assigned classes
+    const allUsers = storage.getAllUsers();
+    const classStudents = allUsers.filter(u => 
+      u.role === 'student' && 
+      u.classId && 
+      currentUser.classes?.includes(u.classId)
+    );
+
     const pendingGrading = submissions.filter((s: any) => 
       assignments.some((a: any) => a.id === s.assignmentId) && !s.grade
     ).length;
@@ -56,11 +71,12 @@ const TeacherDashboard = () => {
     setStats({
       myCourses: courses.length,
       myQuizzes: quizzes.length,
-      totalStudents,
+      totalStudents: classStudents.length,
       myAssignments: assignments.length,
       pendingGrading,
       upcomingEvents: upcomingEvents.length,
       mySalary: lastSalary ? lastSalary.netPay : 0,
+      myClassesCount: teacherClasses.length,
     });
   };
 
@@ -190,6 +206,50 @@ const TeacherDashboard = () => {
                     Post Announcement
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* My Classes */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <School className="h-5 w-5" />
+                      My Assigned Classes
+                    </CardTitle>
+                    <CardDescription>Classes you are teaching</CardDescription>
+                  </div>
+                  <Badge variant="secondary">{stats.myClassesCount} classes</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {assignedClasses.length === 0 ? (
+                  <div className="text-center py-8">
+                    <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold mb-2">No classes assigned yet</h3>
+                    <p className="text-muted-foreground">
+                      Contact your administrator to be assigned to classes
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {assignedClasses.map((cls) => {
+                      const classStudents = storage.getStudentsByClass(cls.id);
+                      return (
+                        <div key={cls.id} className="p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold">{cls.name}</h4>
+                            <Badge variant="outline">{classStudents.length} students</Badge>
+                          </div>
+                          {cls.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">{cls.description}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
