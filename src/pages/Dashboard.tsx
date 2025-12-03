@@ -38,9 +38,10 @@ const Dashboard = () => {
       }
     }
     
-    // Students shouldn't access /courses directly
-    if (location.pathname === "/courses" && currentUser.role === "student") {
-      navigate("/student-dashboard");
+    // For /courses page, load courses for all roles
+    if (location.pathname === "/courses") {
+      setUser(currentUser);
+      loadCourses(currentUser);
       return;
     }
     
