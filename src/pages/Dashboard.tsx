@@ -53,7 +53,11 @@ const Dashboard = () => {
     const allCourses = storage.getCourses();
     if (currentUser.role === "admin") {
       setCourses(allCourses);
+    } else if (currentUser.role === "student") {
+      // Students see only enrolled courses
+      setCourses(allCourses.filter(c => c.enrolledStudents.includes(currentUser.id)));
     } else {
+      // Teachers see courses they created
       setCourses(allCourses.filter(c => c.createdBy === currentUser.id));
     }
   };
@@ -75,29 +79,40 @@ const Dashboard = () => {
           <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">My Courses</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              {user.role === "student" ? "My Enrolled Courses" : "My Courses"}
+            </h2>
             <p className="text-muted-foreground mt-1">
-              Manage your courses and quizzes
+              {user.role === "student" ? "View your enrolled courses" : "Manage your courses and quizzes"}
             </p>
           </div>
-          <Button onClick={() => navigate("/create-course")} size="lg">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Create Course
-          </Button>
+          {user.role !== "student" && (
+            <Button onClick={() => navigate("/create-course")} size="lg">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Create Course
+            </Button>
+          )}
         </div>
 
         {courses.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No courses yet</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                {user.role === "student" ? "No enrolled courses" : "No courses yet"}
+              </h3>
               <p className="text-muted-foreground text-center mb-6 max-w-md">
-                Get started by creating your first course. You can add quizzes and questions to help students learn.
+                {user.role === "student" 
+                  ? "You are not enrolled in any courses yet. Please contact your teacher or admin to get enrolled."
+                  : "Get started by creating your first course. You can add quizzes and questions to help students learn."
+                }
               </p>
-              <Button onClick={() => navigate("/create-course")}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Create Your First Course
-              </Button>
+              {user.role !== "student" && (
+                <Button onClick={() => navigate("/create-course")}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create Your First Course
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (

@@ -84,7 +84,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const studentItems = [
     { title: "Dashboard", url: "/student-dashboard", icon: LayoutDashboard },
-    { title: "My Courses", url: "/student-dashboard", icon: BookOpen },
+    { title: "My Courses", url: "/courses", icon: BookOpen },
     { title: "My Assignments", url: "/student-assignments", icon: ClipboardList },
     { title: "Calendar", url: "/calendar", icon: CalendarIcon },
     { title: "Announcements", url: "/announcements", icon: Megaphone },
