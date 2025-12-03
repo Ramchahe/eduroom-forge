@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { storage } from "@/lib/storage";
 import { User, Course } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
 
@@ -20,21 +21,32 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-    if (currentUser.role === "student") {
+    
+    // Only redirect from /dashboard, not from /courses
+    if (location.pathname === "/dashboard") {
+      if (currentUser.role === "student") {
+        navigate("/student-dashboard");
+        return;
+      }
+      if (currentUser.role === "admin") {
+        navigate("/admin-dashboard");
+        return;
+      }
+      if (currentUser.role === "teacher") {
+        navigate("/teacher-dashboard");
+        return;
+      }
+    }
+    
+    // Students shouldn't access /courses directly
+    if (location.pathname === "/courses" && currentUser.role === "student") {
       navigate("/student-dashboard");
       return;
     }
-    if (currentUser.role === "admin") {
-      navigate("/admin-dashboard");
-      return;
-    }
-    if (currentUser.role === "teacher") {
-      navigate("/teacher-dashboard");
-      return;
-    }
+    
     setUser(currentUser);
     loadCourses(currentUser);
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const loadCourses = (currentUser: User) => {
     const allCourses = storage.getCourses();
