@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
   FEE_STRUCTURES: 'fee_structures',
   FEE_RECORDS: 'fee_records',
   CLASSES: 'school_classes',
+  TIMETABLES: 'timetables',
 };
 
 // Safe localStorage wrapper with error handling
@@ -410,5 +411,39 @@ export const storage = {
 
   getTeachersByClass: (classId: string): User[] => {
     return storage.getAllUsers().filter(u => u.role === 'teacher' && u.classes?.includes(classId));
+  },
+
+  // Timetable operations
+  getTimetables: (): any[] => {
+    const data = safeGetItem(STORAGE_KEYS.TIMETABLES);
+    return data ? JSON.parse(data) : [];
+  },
+
+  getTimetableById: (id: string): any | undefined => {
+    return storage.getTimetables().find((t: any) => t.id === id);
+  },
+
+  getTimetableByClass: (classId: string): any | undefined => {
+    return storage.getTimetables().find((t: any) => t.classId === classId);
+  },
+
+  addTimetable: (timetable: any) => {
+    const timetables = storage.getTimetables();
+    timetables.push(timetable);
+    safeSetItem(STORAGE_KEYS.TIMETABLES, JSON.stringify(timetables));
+  },
+
+  updateTimetable: (id: string, updates: Partial<any>) => {
+    const timetables = storage.getTimetables();
+    const index = timetables.findIndex((t: any) => t.id === id);
+    if (index !== -1) {
+      timetables[index] = { ...timetables[index], ...updates };
+      safeSetItem(STORAGE_KEYS.TIMETABLES, JSON.stringify(timetables));
+    }
+  },
+
+  deleteTimetable: (id: string) => {
+    const timetables = storage.getTimetables().filter((t: any) => t.id !== id);
+    safeSetItem(STORAGE_KEYS.TIMETABLES, JSON.stringify(timetables));
   },
 };

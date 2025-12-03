@@ -30,7 +30,8 @@ import {
   Calendar as CalendarIcon,
   Megaphone,
   DollarSign,
-  School
+  School,
+  Clock
 } from "lucide-react";
 import { toast } from "sonner";
 import { NavLink } from "@/components/NavLink";
@@ -54,6 +55,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const adminItems = [
     { title: "Dashboard", url: "/admin-dashboard", icon: LayoutDashboard },
     { title: "Manage Classes", url: "/manage-classes", icon: School },
+    { title: "Timetable", url: "/timetable", icon: Clock },
     { title: "Courses", url: "/courses", icon: BookOpen },
     { title: "Create Course", url: "/create-course", icon: PlusCircle },
     { title: "Assignments", url: "/assignments", icon: ClipboardList },

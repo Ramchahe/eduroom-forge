@@ -224,3 +224,23 @@ export interface Payment {
   transactionId?: string;
   receiptNumber: string;
 }
+
+export interface TimetableSlot {
+  id: string;
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+  startTime: string;
+  endTime: string;
+  subject: string;
+  teacherId?: string;
+  roomNumber?: string;
+}
+
+export interface Timetable {
+  id: string;
+  classId: string;
+  name: string;
+  slots: TimetableSlot[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
