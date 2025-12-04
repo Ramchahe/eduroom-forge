@@ -57,19 +57,31 @@ export default function ViewTimetable() {
     const allClasses = storage.getClasses();
     setTeachers(storage.getAllUsers().filter(u => u.role === 'teacher'));
 
-    if (currentUser.role === 'student' && currentUser.classId) {
-      // Auto-select student's class
-      setSelectedClassId(currentUser.classId);
-      setClasses(allClasses.filter(c => c.id === currentUser.classId));
+    if (currentUser.role === 'student') {
+      // Auto-select student's class if they have one
+      if (currentUser.classId) {
+        setSelectedClassId(currentUser.classId);
+        setClasses(allClasses.filter(c => c.id === currentUser.classId));
+      } else {
+        // Student has no class assigned - show all classes for now (or empty)
+        setClasses(allClasses);
+        if (allClasses.length > 0) {
+          setSelectedClassId(allClasses[0].id);
+        }
+      }
     } else if (currentUser.role === 'teacher') {
       // Show classes assigned to teacher (from teacher's classes array)
       const teacherClasses = currentUser.classes || [];
       const filteredClasses = allClasses.filter(c => teacherClasses.includes(c.id));
-      setClasses(filteredClasses.length > 0 ? filteredClasses : allClasses);
+      // If teacher has no assigned classes, show all classes
       if (filteredClasses.length > 0) {
+        setClasses(filteredClasses);
         setSelectedClassId(filteredClasses[0].id);
-      } else if (allClasses.length > 0) {
-        setSelectedClassId(allClasses[0].id);
+      } else {
+        setClasses(allClasses);
+        if (allClasses.length > 0) {
+          setSelectedClassId(allClasses[0].id);
+        }
       }
     }
   }, [navigate]);
@@ -119,7 +131,7 @@ export default function ViewTimetable() {
             )}
           </div>
 
-          {user.role === 'teacher' && classes.length > 1 && (
+          {classes.length > 1 && (
             <Card className="mb-6 print:hidden">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

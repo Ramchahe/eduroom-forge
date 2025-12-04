@@ -82,7 +82,7 @@ const StudentCourseView = () => {
           <header className="border-b bg-card shadow-sm sticky top-0 z-10">
             <div className="container mx-auto px-4 py-4 flex items-center gap-4">
               <SidebarTrigger />
-              <Button variant="ghost" size="sm" onClick={() => navigate("/student-dashboard")}>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/courses")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Courses
               </Button>
