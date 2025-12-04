@@ -121,7 +121,14 @@ const Dashboard = () => {
               <Card 
                 key={course.id} 
                 className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/course/${course.id}`)}
+                onClick={() => {
+                  // Students go to student course view, others go to admin/teacher view
+                  if (user.role === 'student') {
+                    navigate(`/student-course-view/${course.id}`);
+                  } else {
+                    navigate(`/course/${course.id}`);
+                  }
+                }}
               >
                 <CardHeader>
                   <div className="rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 h-32 mb-4 flex items-center justify-center">

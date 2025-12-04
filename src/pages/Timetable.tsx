@@ -31,7 +31,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Plus, Trash2, Clock, Edit2, Save } from "lucide-react";
+import { Plus, Trash2, Clock, Edit2, Save, Printer, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 const DAY_LABELS: Record<string, string> = {
@@ -42,17 +43,6 @@ const DAY_LABELS: Record<string, string> = {
   friday: 'Friday',
   saturday: 'Saturday',
 };
-
-const DEFAULT_TIME_SLOTS = [
-  { start: '08:00', end: '08:45' },
-  { start: '08:45', end: '09:30' },
-  { start: '09:30', end: '10:15' },
-  { start: '10:30', end: '11:15' },
-  { start: '11:15', end: '12:00' },
-  { start: '12:45', end: '13:30' },
-  { start: '13:30', end: '14:15' },
-  { start: '14:15', end: '15:00' },
-];
 
 export default function Timetable() {
   const navigate = useNavigate();
@@ -114,9 +104,59 @@ export default function Timetable() {
     toast.success("Timetable created successfully");
   };
 
+  // Check for teacher conflicts across all timetables
+  const checkTeacherConflict = (
+    teacherId: string | undefined,
+    day: string,
+    startTime: string,
+    endTime: string,
+    excludeSlotId?: string
+  ): { hasConflict: boolean; conflictDetails?: string } => {
+    if (!teacherId) return { hasConflict: false };
+
+    const allTimetables = storage.getTimetables();
+    const allClasses = storage.getClasses();
+    
+    for (const tt of allTimetables) {
+      for (const slot of tt.slots) {
+        if (excludeSlotId && slot.id === excludeSlotId) continue;
+        if (slot.teacherId !== teacherId || slot.day !== day) continue;
+
+        // Check time overlap
+        const slotStart = slot.startTime;
+        const slotEnd = slot.endTime;
+        
+        const hasOverlap = (startTime < slotEnd && endTime > slotStart);
+        
+        if (hasOverlap) {
+          const className = allClasses.find(c => c.id === tt.classId)?.name || 'Unknown Class';
+          const teacher = teachers.find(t => t.id === teacherId);
+          return {
+            hasConflict: true,
+            conflictDetails: `${teacher?.name || 'Teacher'} is already scheduled for ${slot.subject} in ${className} at ${slotStart}-${slotEnd} on ${DAY_LABELS[day]}`
+          };
+        }
+      }
+    }
+    return { hasConflict: false };
+  };
+
   const addSlot = () => {
     if (!timetable || !newSlot.subject || !newSlot.day) {
       toast.error("Please fill in required fields");
+      return;
+    }
+
+    // Check for teacher conflict
+    const conflict = checkTeacherConflict(
+      newSlot.teacherId,
+      newSlot.day,
+      newSlot.startTime || '08:00',
+      newSlot.endTime || '08:45'
+    );
+
+    if (conflict.hasConflict) {
+      toast.error(conflict.conflictDetails || "Teacher conflict detected");
       return;
     }
 
@@ -152,6 +192,20 @@ export default function Timetable() {
 
   const updateSlot = () => {
     if (!timetable || !editingSlot) return;
+
+    // Check for teacher conflict (excluding current slot)
+    const conflict = checkTeacherConflict(
+      editingSlot.teacherId,
+      editingSlot.day,
+      editingSlot.startTime,
+      editingSlot.endTime,
+      editingSlot.id
+    );
+
+    if (conflict.hasConflict) {
+      toast.error(conflict.conflictDetails || "Teacher conflict detected");
+      return;
+    }
 
     const updatedSlots = timetable.slots.map(s => 
       s.id === editingSlot.id ? editingSlot : s
@@ -210,15 +264,21 @@ export default function Timetable() {
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar user={user} />
         <main className="flex-1 p-6">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-6 print:hidden">
             <SidebarTrigger />
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold">Timetable Manager</h1>
               <p className="text-muted-foreground">Create and manage class timetables</p>
             </div>
+            {timetable && (
+              <Button onClick={() => window.print()} variant="outline">
+                <Printer className="h-4 w-4 mr-2" />
+                Print Timetable
+              </Button>
+            )}
           </div>
 
-          <Card className="mb-6">
+          <Card className="mb-6 print:hidden">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
@@ -257,6 +317,13 @@ export default function Timetable() {
               </div>
             </CardContent>
           </Card>
+
+          <Alert className="mb-4 print:hidden">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              The system will automatically detect scheduling conflicts when the same teacher is assigned to multiple classes at the same time.
+            </AlertDescription>
+          </Alert>
 
           {timetable && (
             <>

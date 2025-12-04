@@ -34,6 +34,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import ManageClasses from "./pages/ManageClasses";
 import Timetable from "./pages/Timetable";
+import ViewTimetable from "./pages/ViewTimetable";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
           <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
           <Route path="/manage-classes" element={<ManageClasses />} />
           <Route path="/timetable" element={<Timetable />} />
+          <Route path="/view-timetable" element={<ViewTimetable />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -72,6 +72,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const teacherItems = [
     { title: "Dashboard", url: "/teacher-dashboard", icon: LayoutDashboard },
+    { title: "Timetable", url: "/view-timetable", icon: Clock },
     { title: "Courses", url: "/courses", icon: BookOpen },
     { title: "Create Course", url: "/create-course", icon: PlusCircle },
     { title: "Assignments", url: "/assignments", icon: ClipboardList },
@@ -86,6 +87,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const studentItems = [
     { title: "Dashboard", url: "/student-dashboard", icon: LayoutDashboard },
+    { title: "Timetable", url: "/view-timetable", icon: Clock },
     { title: "My Courses", url: "/courses", icon: BookOpen },
     { title: "My Assignments", url: "/student-assignments", icon: ClipboardList },
     { title: "Calendar", url: "/calendar", icon: CalendarIcon },
