@@ -31,7 +31,9 @@ import {
   Megaphone,
   DollarSign,
   School,
-  Clock
+  Clock,
+  TrendingUp,
+  Award
 } from "lucide-react";
 import { toast } from "sonner";
 import { NavLink } from "@/components/NavLink";
@@ -93,6 +95,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
     { title: "Calendar", url: "/calendar", icon: CalendarIcon },
     { title: "Announcements", url: "/announcements", icon: Megaphone },
     { title: "Results", url: "/my-results", icon: FileText },
+    { title: "Analytics", url: "/performance-analytics", icon: TrendingUp },
+    { title: "Certificates", url: "/certificates", icon: Award },
     { title: "Fee Payment", url: "/my-fees", icon: DollarSign },
     { title: "Profile", url: "/profile", icon: UserIcon },
     { title: "Security", url: "/security", icon: Shield },
