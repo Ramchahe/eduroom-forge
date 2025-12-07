@@ -244,3 +244,63 @@ export interface Timetable {
   createdAt: string;
   updatedAt: string;
 }
+
+// Live Streaming Types
+export interface LiveStream {
+  id: string;
+  title: string;
+  description: string;
+  teacherId: string;
+  teacherName: string;
+  targetClasses: string[];
+  status: 'live' | 'ended' | 'scheduled';
+  scheduledAt?: string;
+  startedAt?: string;
+  endedAt?: string;
+  viewerCount: number;
+  createdAt: string;
+}
+
+export interface StreamComment {
+  id: string;
+  streamId: string;
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  content: string;
+  createdAt: string;
+}
+
+// Community Discussion Types
+export interface Community {
+  id: string;
+  name: string;
+  description: string;
+  targetClasses: string[];
+  moderators: string[]; // teacher user IDs
+  createdBy: string;
+  createdAt: string;
+  memberCount: number;
+}
+
+export interface CommunityPost {
+  id: string;
+  communityId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: UserRole;
+  content: string;
+  attachments?: FileAttachment[];
+  likes: string[]; // user IDs who liked
+  createdAt: string;
+}
+
+export interface PostComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: UserRole;
+  content: string;
+  createdAt: string;
+}
