@@ -37,6 +37,8 @@ import Timetable from "./pages/Timetable";
 import ViewTimetable from "./pages/ViewTimetable";
 import PerformanceAnalytics from "./pages/PerformanceAnalytics";
 import Certificates from "./pages/Certificates";
+import LiveStreams from "./pages/LiveStreams";
+import Communities from "./pages/Communities";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +81,8 @@ const App = () => (
           <Route path="/view-timetable" element={<ViewTimetable />} />
           <Route path="/performance-analytics" element={<PerformanceAnalytics />} />
           <Route path="/certificates" element={<Certificates />} />
+          <Route path="/live-streams" element={<LiveStreams />} />
+          <Route path="/communities" element={<Communities />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/security" element={<Security />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
