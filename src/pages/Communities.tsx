@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { storage } from "@/lib/storage";
-import { User, Community, CommunityPost, PostComment, SchoolClass } from "@/types";
+import { User, Community, CommunityPost, PostComment, SchoolClass, FileAttachment } from "@/types";
 import { toast } from "sonner";
 import { 
   Users, 
@@ -26,7 +26,12 @@ import {
   ArrowLeft,
   Shield,
   MoreVertical,
-  Trash2
+  Trash2,
+  Paperclip,
+  Image,
+  FileText,
+  X,
+  Download
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from 'date-fns';
@@ -48,6 +53,7 @@ const Communities = () => {
     moderators: [] as string[]
   });
   const [newPostContent, setNewPostContent] = useState('');
+  const [newPostAttachments, setNewPostAttachments] = useState<FileAttachment[]>([]);
   const [newCommentContent, setNewCommentContent] = useState<Record<string, string>>({});
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
@@ -94,7 +100,7 @@ const Communities = () => {
   };
 
   const createPost = () => {
-    if (!user || !selectedCommunity || !newPostContent.trim()) return;
+    if (!user || !selectedCommunity || (!newPostContent.trim() && newPostAttachments.length === 0)) return;
 
     const post: CommunityPost = {
       id: crypto.randomUUID(),
@@ -103,6 +109,7 @@ const Communities = () => {
       authorName: user.name,
       authorRole: user.role,
       content: newPostContent.trim(),
+      attachments: newPostAttachments.length > 0 ? newPostAttachments : undefined,
       likes: [],
       createdAt: new Date().toISOString()
     };
@@ -113,8 +120,48 @@ const Communities = () => {
     
     setPosts(allPosts);
     setNewPostContent('');
+    setNewPostAttachments([]);
     toast.success('Post created!');
   };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`File ${file.name} is too large. Max size is 5MB.`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const attachment: FileAttachment = {
+          id: crypto.randomUUID(),
+          name: file.name,
+          type: file.type,
+          data: e.target?.result as string,
+          size: file.size
+        };
+        setNewPostAttachments((prev) => [...prev, attachment]);
+      };
+      reader.readAsDataURL(file);
+    });
+    event.target.value = '';
+  };
+
+  const removeAttachment = (id: string) => {
+    setNewPostAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const downloadAttachment = (attachment: FileAttachment) => {
+    const link = document.createElement('a');
+    link.href = attachment.data;
+    link.download = attachment.name;
+    link.click();
+  };
+
+  const isImageType = (type: string) => type.startsWith('image/');
 
   const toggleLike = (postId: string) => {
     if (!user) return;
@@ -332,8 +379,81 @@ const Communities = () => {
                         onChange={(e) => setNewPostContent(e.target.value)}
                         className="min-h-[80px]"
                       />
-                      <div className="flex justify-end">
-                        <Button onClick={createPost} disabled={!newPostContent.trim()}>
+                      
+                      {/* Attachments Preview */}
+                      {newPostAttachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {newPostAttachments.map((attachment) => (
+                            <div 
+                              key={attachment.id} 
+                              className="relative group border rounded-lg overflow-hidden"
+                            >
+                              {isImageType(attachment.type) ? (
+                                <img 
+                                  src={attachment.data} 
+                                  alt={attachment.name}
+                                  className="w-20 h-20 object-cover"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 flex flex-col items-center justify-center bg-muted p-2">
+                                  <FileText className="h-6 w-6 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground truncate w-full text-center mt-1">
+                                    {attachment.name.split('.').pop()?.toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-0 right-0 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => removeAttachment(attachment.id)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-2">
+                          <input
+                            type="file"
+                            id="image-upload"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleFileUpload}
+                          />
+                          <input
+                            type="file"
+                            id="file-upload"
+                            accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
+                            multiple
+                            className="hidden"
+                            onChange={handleFileUpload}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById('image-upload')?.click()}
+                          >
+                            <Image className="h-4 w-4 mr-1" />
+                            Image
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                          >
+                            <Paperclip className="h-4 w-4 mr-1" />
+                            File
+                          </Button>
+                        </div>
+                        <Button 
+                          onClick={createPost} 
+                          disabled={!newPostContent.trim() && newPostAttachments.length === 0}
+                        >
                           <Send className="h-4 w-4 mr-2" />
                           Post
                         </Button>
@@ -392,6 +512,38 @@ const Communities = () => {
                               )}
                             </div>
                             <p className="mt-2 whitespace-pre-wrap">{post.content}</p>
+                            
+                            {/* Post Attachments */}
+                            {post.attachments && post.attachments.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {post.attachments.map((attachment) => (
+                                  <div 
+                                    key={attachment.id} 
+                                    className="relative group border rounded-lg overflow-hidden cursor-pointer"
+                                    onClick={() => downloadAttachment(attachment)}
+                                  >
+                                    {isImageType(attachment.type) ? (
+                                      <img 
+                                        src={attachment.data} 
+                                        alt={attachment.name}
+                                        className="max-w-xs max-h-48 object-cover rounded-lg"
+                                      />
+                                    ) : (
+                                      <div className="flex items-center gap-2 bg-muted p-3 rounded-lg">
+                                        <FileText className="h-5 w-5 text-muted-foreground" />
+                                        <div>
+                                          <p className="text-sm font-medium truncate max-w-[150px]">{attachment.name}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {(attachment.size / 1024).toFixed(1)} KB
+                                          </p>
+                                        </div>
+                                        <Download className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             
                             {/* Actions */}
                             <div className="flex items-center gap-4 mt-4">
