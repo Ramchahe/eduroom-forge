@@ -9,7 +9,7 @@ import { storage } from "@/lib/storage";
 import { UserRole } from "@/types";
 import { toast } from "sonner";
 import { GraduationCap } from "lucide-react";
-
+import { ThemeToggle } from "@/components/ThemeToggle";
 const Login = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,7 +60,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
