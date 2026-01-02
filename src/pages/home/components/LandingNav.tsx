@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion } from "framer-motion";
 import { ArrowRight, Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -54,6 +55,7 @@ export function LandingNav({ onLogoClick, onSignIn, onGetStarted }: Props) {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <Button variant="ghost" size="sm" onClick={onSignIn}>
             Sign in
           </Button>
@@ -91,13 +93,16 @@ export function LandingNav({ onLogoClick, onSignIn, onGetStarted }: Props) {
                 {l.label}
               </a>
             ))}
-            <div className="grid gap-3 pt-2">
-              <Button variant="outline" onClick={onSignIn}>
-                Sign in
-              </Button>
-              <Button className="bg-gradient-hero" onClick={onGetStarted}>
-                Get Started
-              </Button>
+            <div className="flex items-center justify-between pt-2">
+              <ThemeToggle />
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={onSignIn}>
+                  Sign in
+                </Button>
+                <Button className="bg-gradient-hero" onClick={onGetStarted}>
+                  Get Started
+                </Button>
+              </div>
             </div>
           </div>
         </motion.div>
