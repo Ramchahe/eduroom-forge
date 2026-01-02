@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { NavLink } from "@/components/NavLink";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface AppSidebarProps {
   user: User;
@@ -155,6 +156,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <p className="text-sm font-medium truncate">{user.name}</p>
                 <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
               </div>
+              <ThemeToggle />
             </div>
             <Button 
               variant="outline" 
@@ -174,6 +176,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 {user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
+            <ThemeToggle />
             <Button 
               variant="ghost" 
               size="icon"
