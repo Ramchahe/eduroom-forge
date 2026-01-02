@@ -1,61 +1,82 @@
-import { motion, useInView } from "framer-motion";
-import { Shield, Zap, BarChart3, MessagesSquare } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { Shield, Zap, BarChart3, MessagesSquare, TrendingUp } from "lucide-react";
+import { useRef } from "react";
 import { AnimatedNumber } from "@/pages/home/components/AnimatedNumber";
+import { Floating3DCard } from "@/pages/home/components/Floating3DCard";
+import { ScrollVelocityText } from "@/pages/home/components/ScrollVelocityText";
 
 const cards = [
   {
-    title: "Engagement",
+    title: "Student Engagement",
     value: 93,
     suffix: "%",
     icon: Zap,
     note: "AI nudges keep learners active",
+    trend: "+12%",
+    color: "from-primary/20 to-accent/10",
   },
   {
-    title: "Completion",
+    title: "Course Completion",
     value: 78,
     suffix: "%",
     icon: BarChart3,
     note: "Predictive pacing + checkpoints",
+    trend: "+24%",
+    color: "from-accent/20 to-primary/10",
   },
   {
-    title: "Response time",
+    title: "Response Time",
     value: 24,
     suffix: "h",
     icon: MessagesSquare,
     note: "Auto-routing & smart replies",
+    trend: "-65%",
+    color: "from-primary/20 to-accent/10",
   },
   {
-    title: "Security",
+    title: "Platform Security",
     value: 99,
     suffix: ".9%",
     icon: Shield,
     note: "Encrypted & audit-friendly",
+    trend: "A+ Grade",
+    color: "from-accent/20 to-primary/10",
   },
 ];
 
-function Sparkline({ i }: { i: number }) {
-  const paths = useMemo(
-    () => [
-      "M0,22 C20,12 32,30 52,18 C68,10 82,22 100,8",
-      "M0,26 C18,10 42,34 60,18 C76,4 84,18 100,12",
-      "M0,18 C22,6 34,26 52,22 C70,18 80,10 100,16",
-      "M0,20 C20,22 40,6 58,14 C76,22 86,12 100,10",
-    ],
-    []
-  );
+function AnimatedSparkline({ i, inView }: { i: number; inView: boolean }) {
+  const paths = [
+    "M0,28 C15,18 25,35 40,22 C55,10 65,28 80,15 C95,5 100,12 100,8",
+    "M0,30 C12,15 28,38 45,20 C60,8 75,25 90,12 C98,5 100,10 100,8",
+    "M0,25 C18,12 32,32 50,18 C68,6 82,22 95,10 C100,5 100,8 100,8",
+    "M0,32 C14,20 30,38 48,24 C65,12 80,28 92,15 C98,8 100,10 100,8",
+  ];
 
   return (
-    <svg viewBox="0 0 100 32" className="h-8 w-full">
-      <path d={paths[i % paths.length]} className="stroke-border" strokeWidth="2" fill="none" opacity="0.35" />
+    <svg viewBox="0 0 100 40" className="h-12 w-full">
+      <defs>
+        <linearGradient id={`gradient-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.3" />
+        </linearGradient>
+      </defs>
       <motion.path
         d={paths[i % paths.length]}
-        className="stroke-primary"
-        strokeWidth="2"
         fill="none"
+        stroke={`url(#gradient-${i})`}
+        strokeWidth="2"
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 1.1, delay: 0.15 + i * 0.05 }}
+        animate={inView ? { pathLength: 1, opacity: 1 } : {}}
+        transition={{ duration: 1.5, delay: 0.2 + i * 0.1, ease: "easeOut" }}
+      />
+      <motion.path
+        d={paths[i % paths.length]}
+        fill="none"
+        stroke="hsl(var(--primary))"
+        strokeWidth="2"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={inView ? { pathLength: 1, opacity: 1 } : {}}
+        transition={{ duration: 1.5, delay: 0.2 + i * 0.1, ease: "easeOut" }}
       />
     </svg>
   );
@@ -63,55 +84,82 @@ function Sparkline({ i }: { i: number }) {
 
 export function AiTelemetrySection() {
   const ref = useRef<HTMLDivElement | null>(null);
-  const inView = useInView(ref, { once: true, margin: "-20%" });
+  const inView = useInView(ref, { once: true, margin: "-10%" });
+  const containerRef = useRef<HTMLElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
 
   return (
-    <section className="relative py-16">
+    <section ref={containerRef} className="relative py-20 overflow-hidden">
+      {/* Scroll velocity text background */}
+      <div className="absolute inset-0 flex items-center -z-10 opacity-30">
+        <ScrollVelocityText>AI-POWERED • INTELLIGENT • AUTOMATED •</ScrollVelocityText>
+      </div>
+
       <div className="container mx-auto px-4">
         <motion.div
           ref={ref}
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+          style={{ y }}
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
           {cards.map((c, i) => (
-            <motion.div
-              key={c.title}
-              initial={{ opacity: 0, y: 18 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.06 * i }}
-              whileHover={{ y: -6 }}
-              className="group relative overflow-hidden rounded-2xl glass p-6"
-            >
-              <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <div className="absolute -inset-12 bg-gradient-hero opacity-20 blur-2xl" />
-              </div>
+            <Floating3DCard key={c.title} className="h-full">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.1 * i, duration: 0.5 }}
+                className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 h-full"
+              >
+                {/* Background gradient */}
+                <div className={`absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${c.color}`} />
+                
+                {/* Animated corner accent */}
+                <motion.div
+                  className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity, delay: i * 0.5 }}
+                />
 
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">{c.title}</p>
-                  <p className="mt-1 text-3xl font-display font-semibold">
-                    {inView ? (
-                      <>
-                        <AnimatedNumber value={c.value} />
-                        <span className="text-muted-foreground">{c.suffix}</span>
-                      </>
-                    ) : (
-                      "0"
-                    )}
-                  </p>
+                <div className="relative">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{c.title}</p>
+                      <p className="mt-1 text-4xl font-display font-bold">
+                        {inView ? (
+                          <>
+                            <AnimatedNumber value={c.value} />
+                            <span className="text-muted-foreground text-2xl">{c.suffix}</span>
+                          </>
+                        ) : (
+                          "0"
+                        )}
+                      </p>
+                    </div>
+                    <motion.div 
+                      className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 border border-border/50"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                    >
+                      <c.icon className="h-7 w-7 text-primary" />
+                    </motion.div>
+                  </div>
+
+                  <AnimatedSparkline i={i} inView={inView} />
+
+                  <div className="flex items-center justify-between mt-3">
+                    <p className="text-sm text-muted-foreground">{c.note}</p>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                      <TrendingUp className="h-3 w-3" />
+                      {c.trend}
+                    </span>
+                  </div>
                 </div>
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/12 transition-colors group-hover:bg-primary/18">
-                  <c.icon className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <Sparkline i={i} />
-              </div>
-
-              <p className="mt-2 text-sm text-muted-foreground">{c.note}</p>
-            </motion.div>
+              </motion.div>
+            </Floating3DCard>
           ))}
         </motion.div>
       </div>

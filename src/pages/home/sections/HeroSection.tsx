@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Brain, Play, Sparkles, Star, Users } from "lucide-react";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { ArrowRight, Play, Sparkles, Star, Users, Brain, Cpu, Zap } from "lucide-react";
+import { useRef, useEffect } from "react";
+import { ParticleField } from "@/pages/home/components/ParticleField";
+import { MorphingText } from "@/pages/home/components/MorphingText";
+import { FloatingOrb } from "@/pages/home/components/FloatingOrb";
+import { Floating3DCard } from "@/pages/home/components/Floating3DCard";
+import { MagneticButton } from "@/pages/home/components/MagneticButton";
 
 type Props = {
   heroImage: string;
@@ -9,165 +14,326 @@ type Props = {
   onSecondaryCta?: () => void;
 };
 
+const floatingIcons = [
+  { Icon: Brain, x: "10%", y: "20%", delay: 0 },
+  { Icon: Cpu, x: "85%", y: "15%", delay: 0.5 },
+  { Icon: Zap, x: "5%", y: "70%", delay: 1 },
+  { Icon: Sparkles, x: "90%", y: "65%", delay: 1.5 },
+];
+
 export function HeroSection({ heroImage, onPrimaryCta, onSecondaryCta }: Props) {
   const ref = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  const y = useTransform(scrollYProgress, [0, 1], [0, -80]);
-  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0.25]);
-  const glow = useTransform(scrollYProgress, [0, 1], [0.35, 0.12]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -150]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, -5]);
+
+  // Mouse parallax for background
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 30, stiffness: 100 };
+  const bgX = useSpring(mouseX, springConfig);
+  const bgY = useSpring(mouseY, springConfig);
+
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 30;
+      const y = (e.clientY / window.innerHeight - 0.5) * 30;
+      mouseX.set(x);
+      mouseY.set(y);
+    };
+    window.addEventListener("mousemove", handleMouse);
+    return () => window.removeEventListener("mousemove", handleMouse);
+  }, [mouseX, mouseY]);
 
   return (
-    <section ref={ref} className="relative min-h-screen pt-24">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-[0.18]" />
-        <div className="absolute inset-0 vignette bg-gradient-glow" style={{ opacity: 1 }} />
-        <motion.div
-          className="absolute -top-24 left-1/4 h-[520px] w-[520px] rounded-full bg-primary/10 blur-[120px]"
-          style={{ opacity: glow }}
+    <section ref={ref} className="relative min-h-[110vh] pt-24 overflow-hidden">
+      {/* Dynamic background with particles */}
+      <div className="absolute inset-0 -z-10">
+        <motion.div 
+          className="absolute inset-0 bg-grid opacity-[0.12]"
+          style={{ x: bgX, y: bgY }}
         />
-        <motion.div
-          className="absolute -bottom-24 right-1/4 h-[520px] w-[520px] rounded-full bg-accent/10 blur-[120px]"
-          style={{ opacity: glow }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+        
+        <ParticleField />
+        
+        <FloatingOrb className="-top-32 left-1/4" size={500} color="primary" />
+        <FloatingOrb className="-bottom-32 right-1/4" size={450} delay={2} color="accent" />
+        <FloatingOrb className="top-1/3 right-1/3" size={300} delay={4} color="primary" />
       </div>
 
-      <div className="container mx-auto px-4 py-10 lg:py-16">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <motion.div style={{ y, opacity }} className="space-y-8">
+      {/* Floating icons */}
+      {floatingIcons.map(({ Icon, x, y, delay }, i) => (
+        <motion.div
+          key={i}
+          className="absolute hidden lg:grid h-16 w-16 place-items-center rounded-2xl glass"
+          style={{ left: x, top: y }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ 
+            opacity: 0.6, 
+            scale: 1,
+            y: [0, -15, 0],
+            rotate: [-5, 5, -5],
+          }}
+          transition={{ 
+            opacity: { delay: delay + 0.5, duration: 0.5 },
+            scale: { delay: delay + 0.5, duration: 0.5 },
+            y: { duration: 5, repeat: Infinity, delay },
+            rotate: { duration: 7, repeat: Infinity, delay },
+          }}
+        >
+          <Icon className="h-7 w-7 text-primary" />
+        </motion.div>
+      ))}
+
+      <div className="container mx-auto px-4 py-10 lg:py-20">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Left content */}
+          <motion.div style={{ y, opacity, scale }} className="space-y-8 relative z-10">
+            {/* Badge with pulse effect */}
             <motion.div
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="inline-flex items-center gap-2 rounded-full glass px-4 py-2"
+              className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 relative"
             >
-              <Sparkles className="h-4 w-4 text-accent" />
+              <span className="absolute inset-0 rounded-full animate-ping bg-primary/20" style={{ animationDuration: "3s" }} />
+              <Sparkles className="h-4 w-4 text-accent animate-pulse" />
               <span className="text-sm font-medium text-foreground/90">AI Control Room for Modern Schools</span>
             </motion.div>
 
+            {/* Main headline with morphing text */}
             <motion.h1
-              initial={{ opacity: 0, y: 22 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-4xl font-display font-semibold leading-[1.05] sm:text-5xl lg:text-6xl"
+              className="text-4xl font-display font-bold leading-[1.05] sm:text-5xl lg:text-6xl xl:text-7xl"
             >
-              <span className="text-gradient">AI Online Teaching</span>
-              <br />
-              Management Software
+              <span className="block mb-2">AI-Powered</span>
+              <MorphingText />
+              <span className="block mt-2 text-foreground/80">Management</span>
             </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 22 }}
+            {/* Description with gradient underline */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="max-w-xl text-lg text-muted-foreground"
+              className="relative"
             >
-              Run classes, quizzes, communities, fees and analytics like a single intelligent system.
-              Designed to feel fast, fluid, and futuristic.
-            </motion.p>
+              <p className="max-w-xl text-lg text-muted-foreground leading-relaxed">
+                Run classes, quizzes, communities, fees and analytics like a single intelligent system.
+                <span className="text-foreground font-medium"> Designed to feel fast, fluid, and futuristic.</span>
+              </p>
+              <motion.div 
+                className="absolute -bottom-2 left-0 h-px bg-gradient-hero"
+                initial={{ width: 0 }}
+                animate={{ width: "60%" }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+              />
+            </motion.div>
 
+            {/* CTA buttons with magnetic effect */}
             <motion.div
-              initial={{ opacity: 0, y: 22 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-wrap gap-4"
+              className="flex flex-wrap gap-4 pt-2"
             >
-              <Button size="lg" className="bg-gradient-hero glow-primary" onClick={onPrimaryCta}>
-                Start Free Trial
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <MagneticButton
+                onClick={onPrimaryCta}
+                className="group relative inline-flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-xl bg-gradient-hero text-primary-foreground overflow-hidden glow-primary"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Start Free Trial
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.5 }}
+                />
+              </MagneticButton>
 
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-border/60 bg-background/20 backdrop-blur"
+              <MagneticButton
                 onClick={() => {
                   if (onSecondaryCta) return onSecondaryCta();
                   document.getElementById("solutions")?.scrollIntoView({ behavior: "smooth" });
                 }}
+                className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-xl border border-border/60 bg-background/20 backdrop-blur hover:bg-background/40 transition-colors"
               >
-                <Play className="mr-2 h-4 w-4" />
-                Watch Flow
-              </Button>
+                <Play className="h-4 w-4 text-primary" />
+                Watch Demo
+              </MagneticButton>
             </motion.div>
 
+            {/* Social proof */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.45 }}
-              className="flex flex-wrap items-center gap-6"
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap items-center gap-6 pt-4"
             >
+              {/* Animated avatars */}
               <div className="flex -space-x-3">
-                {["A", "I", "O", "P"].map((ch, i) => (
-                  <div
+                {["A", "I", "O", "P", "X"].map((ch, i) => (
+                  <motion.div
                     key={ch}
-                    className="grid h-10 w-10 place-items-center rounded-full border-2 border-background bg-gradient-hero text-xs font-bold text-primary-foreground"
-                    style={{ transform: `translateX(${i * 0}px)` }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.1 }}
+                    className="relative grid h-11 w-11 place-items-center rounded-full border-2 border-background bg-gradient-hero text-xs font-bold text-primary-foreground"
                   >
                     {ch}
-                  </div>
+                    <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: `${3 + i * 0.5}s` }} />
+                  </motion.div>
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 text-warning">
+              <div className="h-8 w-px bg-border/50" />
+
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5 text-warning">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7 + i * 0.1 }}
+                    >
+                      <Star className="h-4 w-4 fill-current" />
+                    </motion.span>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground">Used by educators building the next-gen classroom</p>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-full glass px-3 py-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4 text-primary" />
-                <span>
-                  <span className="text-foreground">50K+</span> active learners
-                </span>
+                <span className="text-sm text-muted-foreground">4.9/5 from 2,000+ reviews</span>
               </div>
             </motion.div>
           </motion.div>
 
+          {/* Right - Interactive 3D dashboard */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
+            initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.3, duration: 0.7 }}
             className="relative"
           >
-            <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-hero opacity-20 blur-2xl" />
+            <Floating3DCard className="relative cursor-pointer">
+              {/* Glow effect */}
+              <div className="absolute -inset-8 -z-10 rounded-3xl bg-gradient-hero opacity-20 blur-3xl" />
+              
+              {/* Main dashboard image */}
+              <motion.div
+                className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 shadow-2xl"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <img
+                  src={heroImage}
+                  alt="AI online teaching management dashboard preview"
+                  className="h-auto w-full"
+                />
 
-            <motion.div
-              className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40 shadow-2xl"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <img
-                src={heroImage}
-                alt="AI online teaching management dashboard preview"
-                className="h-auto w-full"
-              />
+                {/* Animated overlay gradients */}
+                <motion.div
+                  className="pointer-events-none absolute inset-0"
+                  animate={{
+                    background: [
+                      "radial-gradient(circle at 25% 15%, hsl(var(--accent) / 0.2), transparent 55%)",
+                      "radial-gradient(circle at 75% 85%, hsl(var(--primary) / 0.2), transparent 55%)",
+                      "radial-gradient(circle at 25% 15%, hsl(var(--accent) / 0.2), transparent 55%)",
+                    ],
+                  }}
+                  transition={{ duration: 8, repeat: Infinity }}
+                />
 
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,hsl(var(--accent)/0.18),transparent_55%)]" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_70%,hsl(var(--primary)/0.16),transparent_55%)]" />
-            </motion.div>
+                {/* Scan line effect */}
+                <motion.div
+                  className="pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+                  animate={{ top: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                />
+              </motion.div>
+            </Floating3DCard>
 
+            {/* Floating metric cards */}
             <motion.div
               className="absolute -bottom-6 -left-6 rounded-2xl glass p-4 shadow-lg"
-              animate={{ y: [0, -12, 0] }}
-              transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ y: [0, -10, 0], rotate: [-2, 2, -2] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
               <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/15">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/15">
                   <Brain className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">AI Insights</p>
-                  <p className="text-lg font-semibold">Realtime</p>
+                  <p className="text-xs text-muted-foreground">AI Processing</p>
+                  <p className="text-lg font-display font-semibold">Real-time</p>
                 </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="absolute -top-4 -right-4 rounded-2xl glass p-4 shadow-lg"
+              animate={{ y: [0, -12, 0], rotate: [2, -2, 2] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent/15">
+                  <Users className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Active Users</p>
+                  <motion.p 
+                    className="text-lg font-display font-semibold"
+                    animate={{ opacity: [1, 0.7, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    50K+
+                  </motion.p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="absolute top-1/2 -right-8 rounded-2xl glass p-3 shadow-lg"
+              animate={{ x: [0, 5, 0], y: [0, -8, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                <span className="text-xs text-muted-foreground">Live</span>
               </div>
             </motion.div>
           </motion.div>
         </div>
       </div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <motion.div
+          className="flex flex-col items-center gap-2"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <span className="text-xs text-muted-foreground">Scroll to explore</span>
+          <div className="h-10 w-6 rounded-full border-2 border-border/60 p-1">
+            <motion.div
+              className="h-2 w-2 rounded-full bg-primary"
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
