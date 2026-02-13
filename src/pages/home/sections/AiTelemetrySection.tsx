@@ -13,7 +13,7 @@ const cards = [
     icon: Zap,
     note: "AI nudges keep learners active",
     trend: "+12%",
-    color: "from-primary/20 to-accent/10",
+    color: "primary",
   },
   {
     title: "Course Completion",
@@ -22,7 +22,7 @@ const cards = [
     icon: BarChart3,
     note: "Predictive pacing + checkpoints",
     trend: "+24%",
-    color: "from-accent/20 to-primary/10",
+    color: "accent",
   },
   {
     title: "Response Time",
@@ -31,7 +31,7 @@ const cards = [
     icon: MessagesSquare,
     note: "Auto-routing & smart replies",
     trend: "-65%",
-    color: "from-primary/20 to-accent/10",
+    color: "primary",
   },
   {
     title: "Platform Security",
@@ -40,7 +40,7 @@ const cards = [
     icon: Shield,
     note: "Encrypted & audit-friendly",
     trend: "A+ Grade",
-    color: "from-accent/20 to-primary/10",
+    color: "accent",
   },
 ];
 
@@ -92,20 +92,36 @@ export function AiTelemetrySection() {
     offset: ["start end", "end start"],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   return (
-    <section ref={containerRef} className="relative py-20 overflow-hidden">
+    <section ref={containerRef} className="relative py-20 lg:py-28 overflow-hidden">
       {/* Scroll velocity text background */}
-      <div className="absolute inset-0 flex items-center -z-10 opacity-30">
+      <div className="absolute inset-0 flex items-center -z-10 opacity-20 pointer-events-none">
         <ScrollVelocityText>AI-POWERED • INTELLIGENT • AUTOMATED •</ScrollVelocityText>
       </div>
 
       <div className="container mx-auto px-4">
+        {/* Section intro */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/50 backdrop-blur-sm px-4 py-2 text-sm text-muted-foreground mb-4">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            Live Metrics
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-display font-bold">
+            Real-time <span className="text-gradient">performance</span> at a glance
+          </h2>
+        </motion.div>
+
         <motion.div
           ref={ref}
           style={{ y }}
-          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
         >
           {cards.map((c, i) => (
             <Floating3DCard key={c.title} className="h-full">
@@ -113,14 +129,18 @@ export function AiTelemetrySection() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.1 * i, duration: 0.5 }}
-                className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 h-full"
+                className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm p-6 h-full"
               >
-                {/* Background gradient */}
-                <div className={`absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${c.color}`} />
-                
+                {/* Hover gradient */}
+                <div className={`absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${
+                  c.color === "accent" ? "from-accent/10" : "from-primary/10"
+                } to-transparent`} />
+
                 {/* Animated corner accent */}
                 <motion.div
-                  className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl"
+                  className={`absolute -top-12 -right-12 h-24 w-24 rounded-full blur-2xl ${
+                    c.color === "accent" ? "bg-accent/10" : "bg-primary/10"
+                  }`}
                   animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 4, repeat: Infinity, delay: i * 0.5 }}
                 />
@@ -140,18 +160,20 @@ export function AiTelemetrySection() {
                         )}
                       </p>
                     </div>
-                    <motion.div 
-                      className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 border border-border/50"
+                    <motion.div
+                      className={`grid h-13 w-13 place-items-center rounded-2xl border border-border/40 ${
+                        c.color === "accent" ? "bg-accent/10" : "bg-primary/10"
+                      }`}
                       whileHover={{ scale: 1.1, rotate: 5 }}
                     >
-                      <c.icon className="h-7 w-7 text-primary" />
+                      <c.icon className={`h-6 w-6 ${c.color === "accent" ? "text-accent" : "text-primary"}`} />
                     </motion.div>
                   </div>
 
                   <AnimatedSparkline i={i} inView={inView} />
 
                   <div className="flex items-center justify-between mt-3">
-                    <p className="text-sm text-muted-foreground">{c.note}</p>
+                    <p className="text-xs text-muted-foreground">{c.note}</p>
                     <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
                       <TrendingUp className="h-3 w-3" />
                       {c.trend}
