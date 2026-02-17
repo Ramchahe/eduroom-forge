@@ -208,6 +208,16 @@ const Login = () => {
                 <p className="mt-4 text-xs text-muted-foreground">
                   No credit card required • Instant setup • Full admin access
                 </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Not an admin?{" "}
+                  <Button
+                    variant="link"
+                    className="h-auto p-0 text-primary"
+                    onClick={() => navigate("/signup")}
+                  >
+                    Create an account
+                  </Button>
+                </p>
               </motion.div>
             </motion.div>
           )}
