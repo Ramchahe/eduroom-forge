@@ -65,19 +65,19 @@ const Home = () => {
         <LandingNav
           onLogoClick={() => navigate("/")}
           onSignIn={() => navigate("/login")}
-          onGetStarted={() => navigate("/login")}
+          onGetStarted={() => navigate("/signup")}
         />
 
         <main>
-          <HeroSection heroImage={heroDashboard} onPrimaryCta={() => navigate("/login")} />
+          <HeroSection heroImage={heroDashboard} onPrimaryCta={() => navigate("/signup")} />
           <AiTelemetrySection />
           <FeaturesSection />
           <AiStorySection />
-          <PricingSection onGetStarted={() => navigate("/login")} />
+          <PricingSection onGetStarted={() => navigate("/signup")} />
           <TestimonialsSection />
           <FaqSection />
           <ContactSection decorativeImage={aiShapes} />
-          <CtaSection onGetStarted={() => navigate("/login")} />
+          <CtaSection onGetStarted={() => navigate("/signup")} />
         </main>
 
         <FooterSection />
