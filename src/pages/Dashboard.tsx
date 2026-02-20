@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, BookOpen } from "lucide-react";
 import { toast } from "sonner";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { DashboardLayout } from "@/components/DashboardLayout";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,8 +20,7 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-    
-    // Only redirect from /dashboard, not from /courses
+
     if (location.pathname === "/dashboard") {
       if (currentUser.role === "student") {
         navigate("/student-dashboard");
@@ -37,14 +35,13 @@ const Dashboard = () => {
         return;
       }
     }
-    
-    // For /courses page, load courses for all roles
+
     if (location.pathname === "/courses") {
       setUser(currentUser);
       loadCourses(currentUser);
       return;
     }
-    
+
     setUser(currentUser);
     loadCourses(currentUser);
   }, [navigate, location.pathname]);
@@ -54,10 +51,8 @@ const Dashboard = () => {
     if (currentUser.role === "admin") {
       setCourses(allCourses);
     } else if (currentUser.role === "student") {
-      // Students see only enrolled courses
       setCourses(allCourses.filter(c => c.enrolledStudents.includes(currentUser.id)));
     } else {
-      // Teachers see courses they created
       setCourses(allCourses.filter(c => c.createdBy === currentUser.id));
     }
   };
@@ -65,30 +60,20 @@ const Dashboard = () => {
   if (!user) return null;
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar user={user} />
-        <div className="flex-1 flex flex-col">
-          <header className="border-b bg-card shadow-sm sticky top-0 z-10">
-            <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-              <SidebarTrigger />
-              <h1 className="text-xl font-bold">Dashboard</h1>
-            </div>
-          </header>
-
-          <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
+    <DashboardLayout user={user} title={user.role === "student" ? "My Courses" : "Courses"}>
+      <main className="flex-1 px-4 py-6 md:container md:mx-auto md:py-8">
+        <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
               {user.role === "student" ? "My Enrolled Courses" : "My Courses"}
             </h2>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {user.role === "student" ? "View your enrolled courses" : "Manage your courses and quizzes"}
             </p>
           </div>
           {user.role !== "student" && (
-            <Button onClick={() => navigate("/create-course")} size="lg">
-              <PlusCircle className="mr-2 h-5 w-5" />
+            <Button onClick={() => navigate("/create-course")} size="sm" className="md:size-lg self-start">
+              <PlusCircle className="mr-2 h-4 w-4 md:h-5 md:w-5" />
               Create Course
             </Button>
           )}
@@ -96,13 +81,13 @@ const Dashboard = () => {
 
         {courses.length === 0 ? (
           <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
+            <CardContent className="flex flex-col items-center justify-center py-12 md:py-16">
+              <BookOpen className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg md:text-xl font-semibold mb-2">
                 {user.role === "student" ? "No enrolled courses" : "No courses yet"}
               </h3>
-              <p className="text-muted-foreground text-center mb-6 max-w-md">
-                {user.role === "student" 
+              <p className="text-sm text-muted-foreground text-center mb-6 max-w-md">
+                {user.role === "student"
                   ? "You are not enrolled in any courses yet. Please contact your teacher or admin to get enrolled."
                   : "Get started by creating your first course. You can add quizzes and questions to help students learn."
                 }
@@ -116,13 +101,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <Card 
-                key={course.id} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+              <Card
+                key={course.id}
+                className="hover:shadow-lg transition-shadow cursor-pointer active:scale-[0.98]"
                 onClick={() => {
-                  // Students go to student course view, others go to admin/teacher view
                   if (user.role === 'student') {
                     navigate(`/student-course-view/${course.id}`);
                   } else {
@@ -130,17 +114,17 @@ const Dashboard = () => {
                   }
                 }}
               >
-                <CardHeader>
-                  <div className="rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 h-32 mb-4 flex items-center justify-center">
-                    <BookOpen className="h-12 w-12 text-primary" />
+                <CardHeader className="p-4 md:p-6">
+                  <div className="rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 h-24 md:h-32 mb-3 md:mb-4 flex items-center justify-center">
+                    <BookOpen className="h-8 w-8 md:h-12 md:w-12 text-primary" />
                   </div>
-                  <CardTitle className="line-clamp-1">{course.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">
+                  <CardTitle className="line-clamp-1 text-base md:text-lg">{course.title}</CardTitle>
+                  <CardDescription className="line-clamp-2 text-xs md:text-sm">
                     {course.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm">
+                <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+                  <div className="flex items-center justify-between text-xs md:text-sm">
                     <span className="text-muted-foreground">
                       {course.quizzes.length} {course.quizzes.length === 1 ? 'Quiz' : 'Quizzes'}
                     </span>
@@ -153,10 +137,8 @@ const Dashboard = () => {
             ))}
           </div>
         )}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </DashboardLayout>
   );
 };
 
